@@ -3,18 +3,19 @@ type graph
 
 exception Cycle
 
-(* make n crée un graphe à n noeuds sans arêtes, numérotés de 0 à n-1*)
-var make : int -> graph
+(* make n crée un graphe à n noeuds sans arêtes,
+ * numérotés de 0 à n-1*)
+val make : int -> graph
 
 (* add_edge g i j crée l'arête i -> j *)
-var add_edge : graph -> int -> int -> unit
+val add_edge : graph -> int -> int -> unit
 
 (* Teste la présence de cycle dans g *)
-var cyclic : graph -> bool
+val cyclic : graph -> bool
 
 (* tri topologique sur un graphe orienté acyclique
  * Exception Cycle si on fait n'importe quoi *)
-var tsort : graph -> int list
+val tsort : graph -> int list
 
 (*
 ______________________________________________________¶¶¶¶¶¶
