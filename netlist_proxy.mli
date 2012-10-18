@@ -28,11 +28,15 @@ val nb_inputs : t -> int
 val nb_outputs : t -> int 
 
 (* Nombre de variables intermédiaires 
- * qui figurent dans la netlist *)
+ * qui figurent dans la netlist, dont
+ * les registres *)
 val nb_variables : t -> int
 
 (* Nombre de registres *)
 val nb_registers : t -> int
+
+(* Nombre total d'identifiants : inputs + outputs + variables *)
+val nb_identifiers : t -> int
 
 (* Les identifieurs sont rangés dans l'ordre ci-dessus :
  * input_1 ... input_k output_1 .. output_p variable_1 ... variableq

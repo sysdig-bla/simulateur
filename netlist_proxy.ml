@@ -94,7 +94,7 @@ let create_from_program pr =
     let instructions = handle_eq [] pr.p_eqs in
 
     { n_inputs = n_inputs; n_outputs = n_outputs;
-      n_variables = n_totvars - n_outputs; registers = is_register;
+      n_variables = n_totvars; registers = is_register;
       n_registers = !registers_count; 
       instructions = instructions; names = names;
       revnames = !revnames }
@@ -128,4 +128,7 @@ let is_register p id =
     try
         p.registers.(id)
     with _ -> raise Unknown_id
+
+let nb_identifiers p =
+    nb_variables p + nb_inputs p + nb_outputs p
 
