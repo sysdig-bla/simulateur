@@ -1,4 +1,3 @@
-
 open Netlist_ast
 
 module TbAssoc = Map.Make(struct
@@ -15,6 +14,7 @@ type t =
         registers: bool array ;
         n_registers: int ;
         names : string array ;
+        revnames : int TbAssoc.t ; 
     }
 
 exception Unknown_id
@@ -71,7 +71,6 @@ let create_from_program pr =
             | Aconst(_)::t -> convert_to_id t
             | Avar(name)::t -> (get_id name)::(convert_to_id t)
         in
-        (* TODO : faut-il séparer les registres du reste ? le faire autrement *)
         convert_to_id (find_dependencies expression)
     in
 
@@ -97,19 +96,25 @@ let create_from_program pr =
     { n_inputs = n_inputs; n_outputs = n_outputs;
       n_variables = n_totvars - n_outputs; registers = is_register;
       n_registers = !registers_count; 
-      instructions = instructions; names = names }
+      instructions = instructions; names = names;
+      revnames = !revnames }
 
 let nb_inputs p =
-    p.n_inputs
+  p.n_inputs
 
 let nb_outputs p =
-   p.n_outputs 
+  p.n_outputs 
 
 let nb_variables p =
-    p.n_variables
+  p.n_variables
 
 let nb_registers p =
-    p.n_registers
+  p.n_registers
+
+let get_id p name =
+    try
+        TbAssoc.find name p.revnames
+    with _ -> raise Unknown_id
 
 let get_name p id =
     try
@@ -123,5 +128,4 @@ let is_register p id =
     try
         p.registers.(id)
     with _ -> raise Unknown_id
-
 

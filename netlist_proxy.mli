@@ -1,17 +1,15 @@
-
 (* 
  * Module qui sépare et renomme les différents indentifieurs
  * en fonction de leur rôle pour faciliter leur intégration dans le graphe.
  * Plus précisément :
-     *
  * - Le module gère la correspondance entre les noms de variables et les
  *   identifieurs entiers.
  *
  * - Le module permet de tester si un identifiant est un registre
  *
  * - Chaque variable peut dépendre d'un certain nombre d'autres variables
- *   (de 1 à 4 pour l'opération RAM) : la fonction get_instructions simplifie
- *   ça en ne renvoyant que des couples de dépendances
+ *   (de 1 à 4 pour l'opération RAM) : la fonction get_instructions
+ *   simplifie ça en ne renvoyant que des couples de dépendances
  *)
 
 open Netlist_ast ;; 
@@ -40,6 +38,9 @@ val nb_registers : t -> int
  * input_1 ... input_k output_1 .. output_p variable_1 ... variableq
  * (les variables comprenant les registres) *)
 
+(* Identifieur d'une entrée, sortie, variable ou registre *)
+val get_id : t -> string -> int
+
 (* Vrai nom d'une entrée, sortie, variable ou registre *)
 val get_name : t -> int -> string 
 
@@ -49,4 +50,3 @@ val is_register : t -> int -> bool
 (* Récupère les instructions *)
 (* (a,b) veut dire a dépend de b *)
 val get_instructions : t -> (int * int) list
-
