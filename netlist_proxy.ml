@@ -2,7 +2,7 @@
 open Netlist_ast
 
 module TbAssoc = Map.Make(struct
-    type t = int
+    type t = string
     let compare = compare
 end)
 
@@ -11,9 +11,10 @@ type t =
         n_inputs : int ;
         n_outputs : int ;
         n_variables : int ;
-        n_registers : int ;
         instructions : (int * int) list;
-        names : string TbAssoc.t ;
+        registers: bool array ;
+        n_registers: int ;
+        names : string array ;
     }
 
 exception Unknown_id
@@ -23,44 +24,80 @@ let create_from_program pr =
         n_outputs = List.length pr.p_outputs in
     let n_totvars = List.length pr.p_eqs - n_outputs in
 
-    let names = ref TbAssoc.empty in
-    let empty_field_reg = ref (n_totvars + n_outputs + n_inputs - 1) in
-    let empty_field_nonreg = ref (n_outputs + n_inputs) in
+    let names = Array.make (n_totvars + n_outputs + n_inputs) "" in
+    let revnames = ref TbAssoc.empty in
+    let is_register = Array.make (Array.length names) false in
+    let registers_count = ref 0 in
+    let empty_field = ref (n_outputs + n_inputs) in
 
-    let get_id is_reg var_name =
+    let set_id name id =
+            names.(id) <- name;
+            revnames := TbAssoc.add name id !revnames
+    in
+
+    let get_id var_name =
         try
-            TbAssoc.find var_name !names 
+            TbAssoc.find var_name !revnames 
         with Not_found ->
-            if is_reg then
             begin
-                names := TbAssoc.add !empty_field_reg var_name !names;
-                decr empty_field_reg;
-                !empty_field_reg + 1
-            end
-            else
-            begin
-                names := TbAssoc.add !empty_field_nonreg var_name !names;
-                incr empty_field_nonreg;
-                !empty_field_nonreg - 1
+                set_id var_name !empty_field;
+                incr empty_field;
+                !empty_field - 1
             end
     in
 
     let rec add_io start = function
         | [] -> start
-        | h::t -> names := TbAssoc.add start h !names;
+        | h::t -> revnames := TbAssoc.add h start !revnames;
+                  names.(start) <- h;
                   add_io (start+1) t
     in
 
-    let rec handle_eq deps = function
-        | [] -> ()
-        | h::t -> () (* TODO *)             
+    let dependencies_of_exp expression = 
+        let find_dependencies = function
+        | Ereg(p) -> [Avar(p)]
+        | Earg(p)
+        | Enot(p)
+        | Erom(_,_,p)
+        | Eslice(_,_,p)
+        | Eselect(_,p) -> [p]
+        | Ebinop(_,p,q)
+        | Econcat(p,q) -> [p; q]
+        | Emux(p,q,r) -> [p; q; r]
+        | Eram(_,_,p,q,r,s) -> [p; q; r; s]
+        in
+        let rec convert_to_id = function
+            | [] -> []
+            | Aconst(_)::t -> convert_to_id t
+            | Avar(name)::t -> (get_id name)::(convert_to_id t)
+        in
+        (* TODO : faut-il séparer les registres du reste ? le faire autrement *)
+        convert_to_id (find_dependencies expression)
     in
 
+    let is_exp_reg = function
+        | Ereg(_) -> true
+        | _ -> false
+    in
 
-    (* TODO *)
-    { n_inputs = 0; n_outputs = 0;
-      n_variables = 0; n_registers = 0;
-      instructions = []; names = TbAssoc.empty }
+    let rec handle_eq deps = function
+        | [] -> deps
+        | (name,expr)::t ->
+                let id = get_id name in
+                let newdeps = (List.map (fun x -> (id,x)) (dependencies_of_exp
+                expr)) @ deps in
+                is_register.(id) <- (is_exp_reg expr);
+                incr registers_count; 
+                handle_eq newdeps t
+    in
+
+    empty_field := add_io (add_io 0 pr.p_inputs) pr.p_outputs;
+    let instructions = handle_eq [] pr.p_eqs in
+
+    { n_inputs = n_inputs; n_outputs = n_outputs;
+      n_variables = n_totvars - n_outputs; registers = is_register;
+      n_registers = !registers_count; 
+      instructions = instructions; names = names }
 
 let nb_inputs p =
     p.n_inputs
@@ -76,10 +113,15 @@ let nb_registers p =
 
 let get_name p id =
     try
-        TbAssoc.find id p.names 
+        p.names.(id) 
     with _ -> raise Unknown_id
 
 let get_instructions p =
    p.instructions
+
+let is_register p id =
+    try
+        p.registers.(id)
+    with _ -> raise Unknown_id
 
 

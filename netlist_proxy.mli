@@ -6,7 +6,8 @@
      *
  * - Le module gère la correspondance entre les noms de variables et les
  *   identifieurs entiers.
- *   Ces identifieurs sont séparés pour faciliter la gestion des registres.
+ *
+ * - Le module permet de tester si un identifiant est un registre
  *
  * - Chaque variable peut dépendre d'un certain nombre d'autres variables
  *   (de 1 à 4 pour l'opération RAM) : la fonction get_instructions simplifie
@@ -28,7 +29,7 @@ val nb_inputs : t -> int
 (* Nombre de sorties *)
 val nb_outputs : t -> int 
 
-(* Nombre de variables intermédiaires (qui ne sont pas des registres)
+(* Nombre de variables intermédiaires 
  * qui figurent dans la netlist *)
 val nb_variables : t -> int
 
@@ -37,10 +38,13 @@ val nb_registers : t -> int
 
 (* Les identifieurs sont rangés dans l'ordre ci-dessus :
  * input_1 ... input_k output_1 .. output_p variable_1 ... variableq
- * register_1 ... register_n *)
+ * (les variables comprenant les registres) *)
 
 (* Vrai nom d'une entrée, sortie, variable ou registre *)
 val get_name : t -> int -> string 
+
+(* Cette variable est-elle un registre ? *)
+val is_register : t -> int -> bool
 
 (* Récupère les instructions *)
 (* (a,b) veut dire a dépend de b *)
