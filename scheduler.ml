@@ -31,23 +31,28 @@ type iequation = int * iexp
  * entiers
  *)
 
-
 (*
- * Algo intéressant :
- * étant donné une (int * 'a) list (data) et une int list (order)
+ * Étant donné une (int * 'a) list (data) et une int list (order)
  * renvoyer la liste data réordonnée pour que les étiquettes soient dans le même 
  * ordre que dans 'order'.
  *)
 let reorder data order =
-    (* TODO *)
-    data
+    let max_val = List.fold_left max 1 order in
+    let comp = Array.make (max_val + 1) 0 in
+    let _ = List.fold_left (fun i v -> comp.(v) <- i; (i+1)) 0 order in
+    
+    List.sort (fun (xa,va) (xb,vb) -> comp.(xa) - comp.(xb)) data
+
+
 
 let schedule_program pr =
     let proxy = Netlist_proxy.create_from_program pr in
     let nb_noeuds = Netlist_proxy.nb_identifiers proxy in
     let gr = Graph.make nb_noeuds in
 
-    List.iter (fun (i,j) -> Graph.add_edge gr i j)
+    List.iter (fun (i,j) ->
+        if not (Netlist_proxy.is_register proxy j) then
+            Graph.add_edge gr i j)
     (Netlist_proxy.get_instructions proxy);
 
     let order = List.rev (Graph.tsort gr) in
