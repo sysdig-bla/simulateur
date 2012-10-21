@@ -20,7 +20,7 @@
 
 open Netlist_proxy
 open Netlist_ast
-
+open Scheduler
 
 (* Case : value, assess                                                      *)
 (* IErom : addr size, word size, read addr                                    *)
@@ -57,8 +57,8 @@ let convert_value v = match v with
 (** Fonctions d'interprétation.                                             **)
 
 let evalue t = function
-  | Avar i -> t.(i).v 
-  | Aconst v -> v
+  | IAvar i -> t.(i) 
+  | IAconst v -> v
 
 let enot v =
   Array.map (fun b -> not b) v
@@ -140,14 +140,14 @@ let interpret t rom ram i1 = function
 let make_tape n =
   Array.make n [||]
 
-let interpret_netlist rom ram t = function
+let rec interpret_netlist rom ram t = function
     | [] -> ()
     | (i, exp)::tl ->
         interpret t rom ram i exp;
         interpret_netlist rom ram t tl
 
-let inputs_cycle t nb_inputs inputs =
-  Array.blit t 0 inputs 0 nb_inputs
+let inputs_cycle t nb_inputs inputs cycle =
+  Array.blit inputs (cycle*nb_inputs) t 0 nb_inputs
 
 let outputs_cycle t ofs_outputs nb_outputs =
   let o = Array.sub t ofs_outputs nb_outputs in
@@ -164,8 +164,8 @@ let simulate prog nb_cycles inputs =
   let ram = Array.init 8192 (fun _ -> Array.make 32 false) in
   let outputs = ref [] in
   for i = 0 to (nb_cycles - 1) do
-    let () = inputs_cycle t nb_inputs inputs in
-    interpret_netlist rom ram t scheduled in
+    let () = inputs_cycle t nb_inputs inputs i in
+    interpret_netlist rom ram t scheduled; 
     outputs := !outputs @ (outputs_cycle t nb_inputs nb_outputs)
   done;
   !outputs

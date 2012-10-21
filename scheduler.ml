@@ -8,7 +8,7 @@ open Netlist_ast
 
 type iarg =
     | IAvar of int
-    | IAconst of value
+    | IAconst of bool array 
 
 type iexp =
     | IEarg of iarg
@@ -25,6 +25,13 @@ type iexp =
     | IEselect of int * iarg
 
 type iequation = int * iexp
+
+(** Conversion des équations.                                               **)
+
+let convert_value v = match v with
+  | VBit b -> [|b|] 
+  | VBitArray a -> a
+
 
 (*
  * Traduction de la netlist originale en netlist ordonnée avec identifiants
@@ -60,7 +67,7 @@ let schedule_program pr =
     let get_id = Netlist_proxy.get_id proxy in
 
     let translate_arg = function
-        | Aconst(x) -> IAconst(x)
+        | Aconst(x) -> IAconst(convert_value x)
         | Avar(s) -> IAvar(get_id s)
     in
 
