@@ -128,6 +128,25 @@ let rec convert_equations p eqs = match eqs with
   | eq :: tl -> (convert_equation p eq) :: (convert_equations p tl)
 
 
+(** Printers.                                                               **)
+
+let print_tape t =
+  let aux c = match c.v with
+    | [||] -> false
+    | _ ->  c.v.(0)
+  in
+  let () = Array.iter (fun c -> Printf.printf "%b\t" (aux c)) t in
+  Printf.printf "\n"
+
+let rec print_list = function
+  | [] -> Printf.printf "\n"
+  | i :: l -> Printf.printf "%d; " i; print_list l
+
+let rec print_value v =
+  Array.iter (fun b -> Printf.printf "%b; " b) v;
+  Printf.printf "\n"
+
+
 (** Fonctions d'interprétation.                                             **)
 
 let evalue t = function
@@ -144,13 +163,16 @@ let rec ebinop_aux v1 v2 f =
   if n1 > n2
   then ebinop_aux v2 v1 f
   else begin
-     for i = 0 to (n1 - 1) do
-       v3.(i) <- f v1.(i) v2.(i)
-     done;
-     for i = n1 to (n2 - 1) do
-       v3.(i) <- v2.(i)
-     done;
-     v3
+      for i = 0 to (n1 - 1) do
+        v3.(i) <- f v1.(i) v2.(i)
+      done;
+      for i = n1 to (n2 - 1) do
+        v3.(i) <- v2.(i)
+      done;
+      (* let () = print_value v1 in
+      let () = print_value v2 in
+      let () = print_value v3 in *)
+      v3
    end
 
 let ebinop v1 v2 = function
@@ -212,7 +234,7 @@ let interpret t rom ram i1 = function
 (** Fonctions du ruban                                                      **)
 
 let make_tape n =
-  Array.make n {v = [||]; a = fun () -> ()}
+  Array.init n (fun _ -> {v = [|true|]; a = fun () -> ()})
 
 let init_case rom ram t eq =
   let (i, exp) = eq in
@@ -224,13 +246,10 @@ let rec init_tape t rom ram eqs = match eqs with
   | eq :: tl -> let () = init_case t rom ram eq in
     init_tape t rom ram tl
 
-let print_tape t =
-    Array.iter (fun i -> Format.printf "%b " i.v.(0)) t;
-    print_newline ()
-
 let rec execute_tape t schedule = match schedule with
   | [] -> () 
   | i :: tl -> let () = t.(i).a () in
+    (*let () = print_tape t in*)
     execute_tape t tl
 
 let inputs_cycle t nb_inputs inputs cycle =
@@ -252,8 +271,10 @@ let simulate p p_eqs nb_cycles inputs =
   let ram = Array.init 8192 (fun _ -> Array.make 32 false) in
   let () = init_tape rom ram t eqs in
   let outputs = ref [] in
+  (*let () = print_list schedule in*)
   for i = 0 to (nb_cycles - 1) do
     let () = inputs_cycle t nb_inputs inputs i in
+    (* let () = print_tape t in*)
     let () = execute_tape t schedule in
     outputs := !outputs @ (outputs_cycle t nb_inputs nb_outputs)
   done;
