@@ -220,32 +220,23 @@ let init_case rom ram t eq =
   t.(i).a <- a
 
 let rec init_tape t rom ram eqs = match eqs with
-  | [] -> () 
+  | [] -> ()
   | eq :: tl -> let () = init_case t rom ram eq in
     init_tape t rom ram tl
 
-let print_tape t =
-    Array.iter (fun i -> Format.printf "%b " i.v.(0)) t;
-    print_newline ()
-
 let rec execute_tape t schedule = match schedule with
-  | [] -> () 
+  | [] -> ()
   | i :: tl -> let () = t.(i).a () in
     execute_tape t tl
 
-let inputs_cycle t nb_inputs inputs cycle =
-  Array.blit inputs (cycle*nb_inputs) t 0 nb_inputs
+let inputs_cycle t nb_inputs inputs =
+  Array.blit t 0 inputs 0 nb_inputs
 
 let outputs_cycle t ofs_outputs nb_outputs =
   let o = Array.sub t ofs_outputs nb_outputs in
   Array.to_list (Array.map (fun a -> a.v.(0)) o)
 
-let simulate p p_eqs nb_cycles inputs =
-  let nb_cases = nb_identifiers p in
-  let schedule = Scheduler.schedule_program p in
-  let nb_inputs = nb_inputs p in
-  let nb_outputs = nb_outputs p in
-
+let simulate p p_eqs schedule nb_cases nb_cycles nb_inputs nb_outputs inputs =
   let eqs = convert_equations p p_eqs in
   let t = make_tape nb_cases in
   let rom = Array.init 1024 (fun _ -> Array.make 32 false) in
@@ -253,7 +244,7 @@ let simulate p p_eqs nb_cycles inputs =
   let () = init_tape rom ram t eqs in
   let outputs = ref [] in
   for i = 0 to (nb_cycles - 1) do
-    let () = inputs_cycle t nb_inputs inputs i in
+    let () = inputs_cycle t nb_inputs inputs in
     let () = execute_tape t schedule in
     outputs := !outputs @ (outputs_cycle t nb_inputs nb_outputs)
   done;
