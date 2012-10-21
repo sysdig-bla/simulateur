@@ -252,6 +252,9 @@ let rec execute_tape t schedule = match schedule with
     (*let () = print_tape t in*)
     execute_tape t tl
 
+let setup_inputs t raw_inputs nb_inputs =
+    Array.blit (Array.map (fun x -> {v = [|x|]; a = (fun x -> x)}) raw_inputs) 0 t 0 nb_inputs
+
 let inputs_cycle t nb_inputs inputs cycle =
   Array.blit inputs (cycle*nb_inputs) t 0 nb_inputs
 
@@ -259,7 +262,7 @@ let outputs_cycle t ofs_outputs nb_outputs =
   let o = Array.sub t ofs_outputs nb_outputs in
   Array.to_list (Array.map (fun a -> a.v.(0)) o)
 
-let simulate p p_eqs nb_cycles inputs =
+let simulate p p_eqs get_input put_output is_input_available =
   let nb_cases = nb_identifiers p in
   let schedule = Scheduler.schedule_program p in
   let nb_inputs = nb_inputs p in
@@ -270,12 +273,10 @@ let simulate p p_eqs nb_cycles inputs =
   let rom = Array.init 1024 (fun _ -> Array.make 32 false) in
   let ram = Array.init 8192 (fun _ -> Array.make 32 false) in
   let () = init_tape rom ram t eqs in
-  let outputs = ref [] in
+  
   (*let () = print_list schedule in*)
-  for i = 0 to (nb_cycles - 1) do
-    let () = inputs_cycle t nb_inputs inputs i in
-    (* let () = print_tape t in*)
-    let () = execute_tape t schedule in
-    outputs := !outputs @ (outputs_cycle t nb_inputs nb_outputs)
-  done;
-  !outputs
+  while is_input_available () do
+      let () = setup_inputs t (get_input ()) nb_inputs in
+      let () = execute_tape t schedule in
+      put_output (outputs_cycle t nb_inputs nb_outputs)
+  done
