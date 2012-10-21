@@ -92,7 +92,7 @@ let schedule_program pr =
         Format.printf "[%d] : %s\n" i (Netlist_proxy.get_name proxy i))
     order;
 
-    reordered
+    (proxy,reordered)
 
 
 

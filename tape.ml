@@ -19,47 +19,12 @@
  *)
 
 open Netlist_proxy
+open Netlist_ast
 
-
-(** Types.                                                                  **)
-
-type identifier = int
-
-type value = bool array
-
-type operation =
-  | Or
-  | Xor
-  | And
-  | Nand
-  
-type argument =
-  | Avar of identifier
-  | Aconst of value
-
-type expression =
-  | Earg of argument
-  | Ereg of identifier
-  | Enot of argument
-  | Ebinop of operation * argument * argument
-  | Emux of argument * argument * argument
-  | Erom of int * int * argument
-  | Eram of int * int * argument * argument * argument * argument
-  | Econcat of argument * argument
-  | Eslice of int * int * argument
-  | Eselect of int * argument
-
-type equation = identifier * expression
-
-type case =
-  { mutable v: value;
-    mutable a: unit -> unit }
-
-type tape = case array
 
 (* Case : value, assess                                                      *)
-(* Erom : addr size, word size, read addr                                    *)
-(* Eram : addr size, word size, read addr, write enable, write addr, data    *)
+(* IErom : addr size, word size, read addr                                    *)
+(* IEram : addr size, word size, read addr, write enable, write addr, data    *)
 
 
 (** Conversion de types.                                                    **)
@@ -75,58 +40,19 @@ let int_of_value v =
   !i
 
 let int_of_argument t = function
-  | Avar i -> int_of_value t.(i).v 
-  | Aconst v -> int_of_value v
+  | IAvar i -> int_of_value t.(i) 
+  | IAconst v -> int_of_value v
 
 let bool_of_argument t = function
-  | Avar i -> t.(i).v.(0)
-  | Aconst v -> v.(0)
+  | IAvar i -> t.(i).(0)
+  | IAconst v -> v.(0)
 
 
 (** Conversion des équations.                                               **)
 
 let convert_value v = match v with
-  | Netlist_ast.VBit b -> [|b|] 
-  | Netlist_ast.VBitArray a -> a
-
-let convert_argument p a = match a with
-  | Netlist_ast.Avar s -> Avar (get_id p s)
-  | Netlist_ast.Aconst v -> Aconst (convert_value v)
-
-let convert_operation o = match o with
-  | Netlist_ast.Or -> Or
-  | Netlist_ast.Xor -> Xor
-  | Netlist_ast.And -> And
-  | Netlist_ast.Nand -> Nand
-
-let convert_expression p exp = match exp with
-  | Netlist_ast.Earg a -> Earg (convert_argument p a)
-  | Netlist_ast.Ereg s -> Ereg (get_id p s)
-  | Netlist_ast.Enot a -> Enot (convert_argument p a)
-  | Netlist_ast.Ebinop (o, a1, a2) ->
-    Ebinop (convert_operation o, convert_argument p a1, convert_argument p a2)
-  | Netlist_ast.Emux (a1, a2, a3) ->
-    Emux (convert_argument p a1, convert_argument p a2, convert_argument p a3)
-  | Netlist_ast.Erom (i1, i2, a) -> Erom (i1, i2, convert_argument p a)
-  | Netlist_ast.Eram (i1, i2, a1, a2, a3, a4) ->
-    Eram (i1, i2, convert_argument p a1, convert_argument p a2,
-    convert_argument p a3, convert_argument p a4)
-  | Netlist_ast.Econcat (a1, a2) ->
-    Econcat (convert_argument p a1, convert_argument p a2)
-  | Netlist_ast.Eslice (i1, i2, a) ->
-    Eslice (i1, i2, convert_argument p a)
-  | Netlist_ast.Eselect (i, a) -> Eselect (i, convert_argument p a) 
-  
-let convert_equation p eq =
-  let (i1, exp1) = eq in
-  let i2 = get_id p i1 in
-  let exp2 = convert_expression p exp1 in
-  (i2, exp2)
-
-let rec convert_equations p eqs = match eqs with
-  | [] -> []
-  | eq :: tl -> (convert_equation p eq) :: (convert_equations p tl)
-
+  | VBit b -> [|b|] 
+  | VBitArray a -> a
 
 (** Fonctions d'interprétation.                                             **)
 
@@ -170,82 +96,77 @@ let rec write_memory r v1 i l w = match w / l with
     write_memory r v2 (i + 1) l (w - l)
 
 let interpret t rom ram i1 = function
-  | Earg a -> fun () ->
+  | IEarg a ->
     let v = evalue t a in
-    t.(i1).v <- v
-  | Ereg i2 -> fun () ->
-    t.(i1).v <- t.(i2).v
-  | Enot a -> fun () ->
+    t.(i1) <- v
+  | IEreg i2 ->
+    t.(i1) <- t.(i2)
+  | IEnot a ->
     let v = evalue t a in
-    t.(i1).v <- enot v
-  | Ebinop (o, a1, a2) -> fun () ->
+    t.(i1) <- enot v
+  | IEbinop (o, a1, a2) ->
     let v1 = evalue t a1 in
     let v2 = evalue t a2 in
-    t.(i1).v <- ebinop v1 v2 o
-  | Emux (a1, a2, a3) -> fun () ->
+    t.(i1) <- ebinop v1 v2 o
+  | IEmux (a1, a2, a3) ->
     let v1 = evalue t a1 in
     if v1.(0)
-    then t.(i1).v <- evalue t a2
-    else t.(i1).v <- evalue t a3
-  | Erom (l, w, a) -> fun () -> 
+    then t.(i1) <- evalue t a2
+    else t.(i1) <- evalue t a3
+  | IErom (l, w, a) -> 
     let i2 = int_of_argument t a in
-    t.(i1).v <- read_memory rom i2 l w
-  | Eram (l, w, a1, a2, a3, a4) -> fun () ->
+    t.(i1) <- read_memory rom i2 l w
+  | IEram (l, w, a1, a2, a3, a4) ->
     let i2 = int_of_argument t a1 in
     let i3 = int_of_argument t a3 in
     let v = evalue t a4 in
-    let () = t.(i1).v <- read_memory ram i2 l w in
+    let () = t.(i1) <- read_memory ram i2 l w in
     if bool_of_argument t a2
     then write_memory ram v i3 l w
-  | Econcat (a1, a2) -> fun () ->
+  | IEconcat (a1, a2) ->
     let v1 = evalue t a1 in
     let v2 = evalue t a2 in
-    t.(i1).v <- Array.append v1 v2
-  | Eslice (s, l, a) -> fun () ->
+    t.(i1) <- Array.append v1 v2
+  | IEslice (s, l, a) ->
     let v = evalue t a in
-    t.(i1).v <- Array.sub v s l
-  | Eselect (i, a) -> fun () ->
+    t.(i1) <- Array.sub v s l
+  | IEselect (i, a) ->
     let v = evalue t a in
-    t.(i1).v <- [|v.(i)|]
+    t.(i1) <- [|v.(i)|]
 
 
 (** Fonctions du ruban                                                      **)
 
 let make_tape n =
-  Array.make n {v = [||]; a = fun () -> ()}
+  Array.make n [||]
 
-let init_case rom ram t eq =
-  let (i, exp) = eq in
-  let a = interpret t rom ram i exp in
-  t.(i).a <- a
-
-let rec init_tape t rom ram eqs = match eqs with
-  | [] -> ()
-  | eq :: tl -> let () = init_case t rom ram eq in
-    init_tape t rom ram tl
-
-let rec execute_tape t schedule = match schedule with
-  | [] -> ()
-  | i :: tl -> let () = t.(i).a () in
-    execute_tape t tl
+let interpret_netlist rom ram t = function
+    | [] -> ()
+    | (i, exp)::tl ->
+        interpret t rom ram i exp;
+        interpret_netlist rom ram t tl
 
 let inputs_cycle t nb_inputs inputs =
   Array.blit t 0 inputs 0 nb_inputs
 
 let outputs_cycle t ofs_outputs nb_outputs =
   let o = Array.sub t ofs_outputs nb_outputs in
-  Array.to_list (Array.map (fun a -> a.v.(0)) o)
+  Array.to_list (Array.map (fun a -> a.(0)) o)
 
-let simulate p p_eqs schedule nb_cases nb_cycles nb_inputs nb_outputs inputs =
-  let eqs = convert_equations p p_eqs in
+let simulate prog nb_cycles inputs =
+  let (p,scheduled) = schedule_program prog in
+  let nb_inputs = nb_inputs p in
+  let nb_outputs = nb_outputs p in
+  let nb_cases = nb_identifiers p in
+
   let t = make_tape nb_cases in
   let rom = Array.init 1024 (fun _ -> Array.make 32 false) in
   let ram = Array.init 8192 (fun _ -> Array.make 32 false) in
-  let () = init_tape rom ram t eqs in
   let outputs = ref [] in
   for i = 0 to (nb_cycles - 1) do
     let () = inputs_cycle t nb_inputs inputs in
-    let () = execute_tape t schedule in
+    interpret_netlist rom ram t scheduled in
     outputs := !outputs @ (outputs_cycle t nb_inputs nb_outputs)
   done;
   !outputs
+
