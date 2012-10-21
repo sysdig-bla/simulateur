@@ -4,6 +4,10 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{fullpage}
+\usepackage{pgf}
+\usepackage{tikz}
+\usetikzlibrary{arrows,automata}
+\usetikzlibrary{positioning}
 
 \begin{document}
 
@@ -13,27 +17,104 @@
 
 \maketitle
 
-Viendez écrire !
-Et changez les sections…
+\huge Viendez écrire ! C'est fun ! Surtout avec \LaTeX.
+\normalsize
 
 \section{Algorithme}
 
-ici
+Nous avons implémenté l'algorithme suggéré au cours du TP1.
+La netlist représentée sous forme d'arbre de syntaxe abstraite définit un graphe des dépendances : un arc joint $a$ à $b$ si connaître la valeur de $a$ est nécessaire pour calculer celle de $b$.
+On réalise un tri topologique pour déterminer dans quel ordre il faut calculer les valeurs des variables de sorte qu'on n'ait besoin que de valeurs déjà calculées à chaque étape.
 
-\section{Outils}
+Dans les exemples suivants, on a représenté les variables d'entrée dans le graphe, en pratique elles n'ont pas besoin d'y figurer.
 
-ou là
+\begin{figure}[h]
+    \centering
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=1.8cm,
+                            semithick]
+\tikzstyle{every state}=[]
+
+\node[state]         (A)                    { a };
+\node[state]         (L5) [below left of=A] {\_l\_5};
+\node[state]         (L4) [below left of=L5] {\_l\_4};
+\node[state]         (R)  [right=of L5] { r };
+\node[state]         (L1) [below right of=R] {\_l\_1};
+\node[state]         (L3) [right=of L1]  {\_l\_3 };
+\node[state]         (C)  [below of=L5] { c };
+\node[state]         (S)  [right=of C]  { s };
+\node[state]         (B)  [below right of=C] { b };
+
+\path (L5) edge             node {} (L4)
+           edge             node {} (C)
+      (L4) edge [bend left]  node {} (A)
+           edge [bend right] node {} (B)
+      (R)  edge             node {} (L5)
+           edge             node {} (L3)
+      (L1) edge [bend right] node {} (A)
+           edge [bend left]  node {} (B)
+      (L3) edge [bend right]  node {} (A)
+           edge [bend left]  node {} (B)
+      (S)  edge              node {} (C)
+           edge              node {} (L1);
+\end{tikzpicture}
+\caption{Le graphe obtenu à partir de la netlist \texttt{fulladder.net}}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=0.8cm,
+                            semithick]
+\tikzstyle{every state}=[]
+
+\node[state]         (A)                    { a };
+\node[state]         (B)  [right=of A] { b };
+\node[state]         (C)  [right=of B] { c };
+\node[state]         (L4) [right=of C] {\_l\_4};
+\node[state]         (L5) [right=of L4] {\_l\_5};
+\node[state]         (L3) [right=of L5]  {\_l\_3 };
+\node[state]         (L1) [right=of L3] {\_l\_1};
+\node[state]         (R)  [right=of L1] { r };
+\node[state]         (S)  [right=of R]  { s };
+
+\path (L5) edge             node {} (L4)
+edge [bend right]  node {} (C)
+      (L4) edge [bend left]  node {} (A)
+           edge [bend right] node {} (B)
+           (R)  edge [bend left] node {} (L5)
+           edge [bend right] node {} (L3)
+      (L1) edge [bend right] node {} (A)
+           edge [bend left]  node {} (B)
+      (L3) edge [bend right]  node {} (A)
+           edge [bend left]  node {} (B)
+           (S)  edge  [bend right]  node {} (C)
+           edge  [bend left] node {} (L1);
+\end{tikzpicture}
+\caption{Le même graphe après tri topologique}
+\end{figure}
+
+
+\section{Implémentation}
+
+Nous avons réutilisé le parser et le lexer fournis dans le TP1, ainsi que les types définis dans \texttt{netlist\_ast.ml}.
+Nous avons écrit le reste, en séparant le code (dans la mesure du possible) en modules indépendants :
+\begin{itemize}
+    \item \texttt{Graph} : représentation des graphes et tri topologique ;
+    \item \texttt{Netlist\_proxy} : traduction des noms de variables en entiers, extraction des dépendances ;
+    \item \texttt{Tape} : gestion des opérations \texttt{RAM} et \texttt{ROM} ;
+    \item \texttt{Scheduler} : jointure entre \texttt{Graph} et \texttt{Netlist\_proxy}.
+\end{itemize}
 
 \section{Problèmes rencontrés}
 
-en fait, plutôt ici
+coucou
 
 \section{Améliorations possibles}
 
-mais pas là (il n'y a aucune amélioration possible, bien sûr)
+salut, ça va ?
 
 \section{Autre chose ?}
 
+ouais, et toi ?
 
 \end{document}
 
