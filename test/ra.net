@@ -1,0 +1,6 @@
+INPUT ra, wa, d
+OUTPUT o
+VAR
+  d, o, ra, wa
+IN
+o = RAM 1 1 ra wa d

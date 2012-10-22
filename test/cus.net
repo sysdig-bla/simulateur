@@ -1,0 +1,8 @@
+INPUT a
+OUTPUT d
+VAR
+  a : 2, b, c, d : 2
+IN
+b = SELECT 0 a
+c = SELECT 1 a
+d = CONCAT b c 
