@@ -272,14 +272,14 @@ let rec execute_tape t schedule = match schedule with
     execute_tape t tl
 
 let setup_inputs t raw_inputs nb_inputs =
-    Array.blit (Array.map (fun x -> {v0 = [|x|]; v1 = [|x|]; a = (fun x -> x)}) raw_inputs) 0 t 0 nb_inputs
+    Array.blit (Array.map (fun x -> {v0 = x; v1 = x; a = (fun y -> y)}) raw_inputs) 0 t 0 nb_inputs
 
 let inputs_cycle t nb_inputs inputs cycle =
   Array.blit inputs (cycle*nb_inputs) t 0 nb_inputs
 
 let outputs_cycle t ofs_outputs nb_outputs =
   let o = Array.sub t ofs_outputs nb_outputs in
-  let result =  Array.to_list (Array.map (fun a -> (curv a).(0)) o) in
+  let result =  Array.to_list (Array.map (fun a -> (curv a)) o) in
   result
 
 let simulate p p_eqs get_input put_output is_input_available debug_mode =
