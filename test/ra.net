@@ -1,6 +1,6 @@
-INPUT ra, wa, d
+INPUT ra, wa, we, d
 OUTPUT o
 VAR
-  d, o, ra, wa
+  ra, d, o, wa, we
 IN
-o = RAM 1 1 ra wa d
+o = RAM 1 1 ra we wa d

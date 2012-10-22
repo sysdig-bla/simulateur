@@ -70,7 +70,7 @@ let int_of_value v =
   let i = ref 0 in
   for j = (n - 1) downto 0 do
     if v.(j)
-    then i := j + 2 * !i
+    then i := 1 + 2 * !i
     else i := 2 * !i
   done;
   !i
@@ -200,6 +200,11 @@ let setv t i v =
     else
         t.(i).v1 <- v
 
+let rec fast_2 = function
+  | 0 -> 1
+  | n when n mod 2 = 0 -> let x = fast_2 (n/2) in x*x
+  | n -> let x = fast_2 (n/2) in x*x*2
+
 let interpret t i1 = function
   | Earg a -> fun () ->
     let v = evalue t a in
@@ -218,11 +223,11 @@ let interpret t i1 = function
     if v1.(0)
     then setv t i1 (evalue t a2)
     else setv t i1 (evalue t a3)
-  | Erom (l, w, a) -> (**C'EST 2^l !!!!!!!!!!!!!!!!!!!!!!!**)
-    let r = Array.init l (fun _ -> Array.make w false) in
+  | Erom (l, w, a) -> 
+    let r = Array.init (fast_2 l) (fun _ -> Array.make w false) in
     fun () -> setv t i1 r.(int_of_argument t a)
   | Eram (l, w, ra, we, wa, d) -> 
-    let r = Array.init l (fun _ -> Array.make w false) in
+    let r = Array.init (fast_2 l) (fun _ -> Array.make w false) in
     fun () -> begin
       setv t i1 r.(int_of_argument t ra);
       if bool_of_argument t we
@@ -287,7 +292,7 @@ let simulate p p_eqs get_input put_output is_input_available debug_mode =
       let () = setup_inputs t (get_input ()) nb_inputs in
       let () = execute_tape t schedule in
       put_output (outputs_cycle t nb_inputs nb_outputs);
-      
+  
       if debug_mode then
       begin    
           for i = 0 to nb_cases - 1 do
