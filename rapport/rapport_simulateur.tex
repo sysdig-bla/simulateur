@@ -95,8 +95,7 @@ edge [bend right]  node {} (C)
 
 Nous avons réutilisé le parser et le lexer fournis dans le TP1, ainsi que les types définis dans \texttt{netlist\_ast.ml}.
 Nous avons écrit le reste, en séparant le code (dans la mesure du possible) en modules indépendants.
-Les variables sont converties en entiers afin de faciliter l'écriture
-du simulateur dans l'ensemble.
+Les variables sont converties en entiers afin de faciliter la simulation (leurs valeurs étant stockées dans un tableau), au détriment d'une écriture plus complexe pour faire le lien avec leur représentation initiale.
 \begin{itemize}
     \item \texttt{Graph} : représentation des graphes et tri topologique ;
     \item \texttt{Netlist\_proxy} : traduction des noms de variables en entiers, extraction des dépendances ;
