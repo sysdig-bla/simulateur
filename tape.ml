@@ -280,8 +280,6 @@ let simulate p p_eqs get_input put_output is_input_available debug_mode =
 
   let eqs = convert_equations p p_eqs in
   let t = make_tape nb_cases in
-  let rom = Array.init 1024 (fun _ -> Array.make 32 false) in
-  let ram = Array.init 8192 (fun _ -> Array.make 32 false) in
   let () = init_tape t eqs in
   
   (*let () = print_list schedule in*)
