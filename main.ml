@@ -2,15 +2,22 @@ open Tape
 open Netlist_ast
 
 
+(* Ce code ne fait rien d'intéressant, mais uniquement :
+    * La gestion des arguments donnés en ligne de commande
+    * La gestion des valeurs d'entrée et sortie en mode interactif
+ *)
+
 (* Parsing of the arguments *)
 let usage = Printf.sprintf
-"Usage: %s [-b] netlist"
+"Usage: %s [-bd] netlist"
 (Filename.basename Sys.argv.(0))
 
 let batch_mode = ref false
+let debug_mode = ref false
 
 let optlist = [
-    ("-b", Arg.Unit (fun () -> batch_mode := true), " : batch mode");
+    ("-b", Arg.Unit (fun () -> batch_mode := true), " batch mode");
+    ("-d", Arg.Unit (fun () -> debug_mode := true), " debug mode");
 ]
 
 
@@ -19,9 +26,6 @@ let main () =
     let collect arg =
         args := !args @ [arg] in
     Arg.parse optlist collect usage;
-
-    let inputs = [| false; false; false; false; false; true; false; true; false; false; true; true; true; false; false; true; false; true; true; true; false; true; true; true |] 
-    in
 
     (match !args with
     | [] -> print_string "No netlist to simulate. See --help.\n"
@@ -32,7 +36,8 @@ let main () =
             let proxy = Netlist_proxy.create_from_program pr in
             let cycles_count = ref 0 in
             
-            
+            (* The next 3 functions are needed for the batch mode.
+             * It's not implemented yet. *)
             let get_input_b () = [| false; false; false |] in
 
             let is_input_available_b () =
@@ -45,6 +50,7 @@ let main () =
                 Format.printf "\n"
             in
 
+            (* Reads the input from the standard input *)
             let input_i_array = Array.make (Netlist_proxy.nb_inputs proxy) false in
             let get_input_i () =
                 Format.printf "Step %d:\n%!" (!cycles_count + 1);
@@ -62,9 +68,11 @@ let main () =
                 input_i_array
             in
 
+            (* To stop the program, interrupt it with ^C *)
             let is_input_available_i () = true
             in
 
+            (* Prints the output to the standard output *)
             let put_output_i lst =
                 let nbinputs = Netlist_proxy.nb_inputs proxy in
                 let tab = Array.of_list lst in
@@ -79,11 +87,11 @@ let main () =
             (* Simulates the netlist *)
             if !batch_mode then
                 simulate proxy pr.p_eqs get_input_b put_output_b
-                is_input_available_b
+                is_input_available_b !debug_mode
             else
-                simulate proxy pr.p_eqs get_input_i put_output_i
-                is_input_available_i
+                simulate proxy pr.p_eqs get_input_i put_output_i 
+                is_input_available_i !debug_mode 
         end
     )
 
-    let () = main ()
+let () = main ()

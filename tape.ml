@@ -215,7 +215,7 @@ let interpret t rom ram i1 = function
     let v = evalue t a in
     setv t i1 v
   | Ereg i2 -> fun () ->
-    setv t i1 (if !current_value_in_v0 then t.(i2).v0 else t.(i2).v1)
+    setv t i1 (if !current_value_in_v0 then t.(i2).v1 else t.(i2).v0)
   | Enot a -> fun () ->
     let v = evalue t a in
     setv t i1 (enot v)
@@ -282,7 +282,7 @@ let outputs_cycle t ofs_outputs nb_outputs =
   let result =  Array.to_list (Array.map (fun a -> (curv a).(0)) o) in
   result
 
-let simulate p p_eqs get_input put_output is_input_available =
+let simulate p p_eqs get_input put_output is_input_available debug_mode =
   let nb_cases = nb_identifiers p in
   let schedule = Scheduler.schedule_program p in
   let nb_inputs = nb_inputs p in
@@ -299,9 +299,14 @@ let simulate p p_eqs get_input put_output is_input_available =
       let () = setup_inputs t (get_input ()) nb_inputs in
       let () = execute_tape t schedule in
       put_output (outputs_cycle t nb_inputs nb_outputs);
-      (* Format.printf "Tape before :\n%!";
-      print_tape t;
-      Format.printf "Tape after :\n%!"; *)
+      
+      if debug_mode then
+      begin    
+          for i = 0 to nb_cases - 1 do
+              Printf.printf "%s : %b\n%!" (Netlist_proxy.get_name p i) (if
+                  !current_value_in_v0 then t.(i).v0.(0) else t.(i).v1.(0))
+          done
+      end;
+
       current_value_in_v0 := not !current_value_in_v0; 
-      (* print_tape t; *)
   done

@@ -18,11 +18,18 @@ let schedule_program proxy =
 
     List.iter (fun (i,j) ->
         if not (Netlist_proxy.is_register proxy j) then
-            Graph.add_edge gr i j)
+            Graph.add_edge gr j i)
     (Netlist_proxy.get_instructions proxy);
 
-    let order = List.rev (Graph.tsort gr) in
+    let rec move_registers_to_the_front accu = function
+        | [] -> accu
+        | h::t when Netlist_proxy.is_register proxy h ->
+                move_registers_to_the_front (h::accu) t
+        | h::t -> move_registers_to_the_front (accu @ [h]) t
+    in
 
-    order
+    let order = (Graph.tsort gr) in
+
+    move_registers_to_the_front [] order
 
 
