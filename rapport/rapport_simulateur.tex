@@ -95,7 +95,7 @@ edge [bend right]  node {} (C)
 
 Nous avons réutilisé le parser et le lexer fournis dans le TP1, ainsi que les types définis dans \texttt{netlist\_ast.ml}.
 Les variables sont converties en entiers afin de faciliter la simulation (leurs valeurs étant stockées dans un tableau), au détriment d'une écriture plus complexe pour faire le lien avec leur représentation initiale.
-Nous avons fait le choix de ne pas interpréter chaque équation à chaque cycle, mais de les interpréter lors d'une phase initiale en les gelant en fonctions du type \texttt{unit -> unit} et de les lier aux variables correspondants.
+Nous avons fait le choix de ne pas interpréter chaque équation à chaque cycle, mais de les interpréter lors d'une phase initiale en les gelant en fonctions du type \texttt{unit -> unit} et de les lier aux variables correspondants. Choix justifié par le nombre d'appels que présenterait une fonction globale aux tests mutliples.
 Nous avons écrit le reste, en séparant le code (dans la mesure du possible) en modules indépendants :
 \begin{itemize}
     \item \texttt{Graph} : représentation des graphes et tri topologique ;
@@ -128,7 +128,7 @@ correspondre à un même fil dans la nappe $\_l\_14$.
     \item Lecture des données plus propre (elle est en boucle
 infinie pour l'instant) ;
     \item Mieux séparer les fonctions dans des modules différents ;
-    \item Optimisation de notre programme en vitesse d'exécution.
+    \item Optimisation de notre programme en vitesse d'exécution. En particulier l'interprétation initiale des fonctions pourrait être poussée plus encore avant le gèle.
 \end{itemize}
 
 % \section{Autre chose ?}
