@@ -200,13 +200,7 @@ let setv t i v =
     else
         t.(i).v1 <- v
 
-let rec write_memory r v1 i l w = match w / l with
-  | 0 -> Array.blit v1 0 r.(i) 0 w
-  | _ -> Array.blit v1 0 r.(i) 0 l;
-    let v2 = Array.sub v1 l ((Array.length v1) - l - 1) in
-    write_memory r v2 (i + 1) l (w - l)
-
-let interpret t rom ram i1 = function
+let interpret t i1 = function
   | Earg a -> fun () ->
     let v = evalue t a in
     setv t i1 v
@@ -288,7 +282,7 @@ let simulate p p_eqs get_input put_output is_input_available debug_mode =
   let t = make_tape nb_cases in
   let rom = Array.init 1024 (fun _ -> Array.make 32 false) in
   let ram = Array.init 8192 (fun _ -> Array.make 32 false) in
-  let () = init_tape rom ram t eqs in
+  let () = init_tape t eqs in
   
   (*let () = print_list schedule in*)
   while is_input_available () do
