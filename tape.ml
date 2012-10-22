@@ -52,7 +52,8 @@ type expression =
 type equation = identifier * expression
 
 type case =
-  { mutable v: value;
+  { mutable v0: value;
+    mutable v1: value;
     mutable a: unit -> unit }
 
 type tape = case array
@@ -74,12 +75,22 @@ let int_of_value v =
   done;
   !i
 
+  (* This flags tells wether the current value is stored
+   * in v0 or v1.
+   * At each cycle, we flip the flag, so that the values of the previous
+   * cycle are still stored in the array. *)
+let current_value_in_v0 = ref false 
+
+  (* Curv : current value, according to the flag *)
+let curv c =
+    if !current_value_in_v0 then c.v0 else c.v1
+
 let int_of_argument t = function
-  | Avar i -> int_of_value t.(i).v 
+  | Avar i -> int_of_value (curv t.(i)) 
   | Aconst v -> int_of_value v
 
 let bool_of_argument t = function
-  | Avar i -> t.(i).v.(0)
+  | Avar i -> (curv t.(i)).(0)
   | Aconst v -> v.(0)
 
 
@@ -131,9 +142,9 @@ let rec convert_equations p eqs = match eqs with
 (** Printers.                                                               **)
 
 let print_tape t =
-  let aux c = match c.v with
+  let aux c = match (curv c) with
     | [||] -> false
-    | _ ->  c.v.(0)
+    | x ->  x.(0)
   in
   let () = Array.iter (fun c -> Printf.printf "%b\t" (aux c)) t in
   Printf.printf "\n"
@@ -150,7 +161,7 @@ let rec print_value v =
 (** Fonctions d'interprétation.                                             **)
 
 let evalue t = function
-  | Avar i -> t.(i).v 
+  | Avar i -> (curv t.(i)) 
   | Aconst v -> v
 
 let enot v =
@@ -191,50 +202,58 @@ let rec write_memory r v1 i l w = match w / l with
     let v2 = Array.sub v1 l ((Array.length v1) - l - 1) in
     write_memory r v2 (i + 1) l (w - l)
 
+(* Sets the value of a variable, in the right field according to the
+ * current_value_in_v0 flag. *)
+let setv t i v =
+    if !current_value_in_v0 then
+        t.(i).v1 <- v
+    else
+        t.(i).v0 <- v
+
 let interpret t rom ram i1 = function
   | Earg a -> fun () ->
     let v = evalue t a in
-    t.(i1).v <- v
+    setv t i1 v
   | Ereg i2 -> fun () ->
-    t.(i1).v <- t.(i2).v
+    setv t i1 (curv t.(i2))
   | Enot a -> fun () ->
     let v = evalue t a in
-    t.(i1).v <- enot v
+    setv t i1 (enot v)
   | Ebinop (o, a1, a2) -> fun () ->
     let v1 = evalue t a1 in
     let v2 = evalue t a2 in
-    t.(i1).v <- ebinop v1 v2 o
+    setv t i1 (ebinop v1 v2 o)
   | Emux (a1, a2, a3) -> fun () ->
     let v1 = evalue t a1 in
     if v1.(0)
-    then t.(i1).v <- evalue t a2
-    else t.(i1).v <- evalue t a3
+    then setv t i1 (evalue t a2)
+    else setv t i1 (evalue t a3)
   | Erom (l, w, a) -> fun () -> 
     let i2 = int_of_argument t a in
-    t.(i1).v <- read_memory rom i2 l w
+    setv t i1 (read_memory rom i2 l w)
   | Eram (l, w, a1, a2, a3, a4) -> fun () ->
     let i2 = int_of_argument t a1 in
     let i3 = int_of_argument t a3 in
     let v = evalue t a4 in
-    let () = t.(i1).v <- read_memory ram i2 l w in
+    let () = setv t i1 (read_memory ram i2 l w) in
     if bool_of_argument t a2
     then write_memory ram v i3 l w
   | Econcat (a1, a2) -> fun () ->
     let v1 = evalue t a1 in
     let v2 = evalue t a2 in
-    t.(i1).v <- Array.append v1 v2
+    setv t i1 (Array.append v1 v2)
   | Eslice (s, l, a) -> fun () ->
     let v = evalue t a in
-    t.(i1).v <- Array.sub v s l
+    setv t i1 (Array.sub v s l)
   | Eselect (i, a) -> fun () ->
     let v = evalue t a in
-    t.(i1).v <- [|v.(i)|]
+    setv t i1 [|v.(i)|]
 
 
 (** Fonctions du ruban                                                      **)
 
 let make_tape n =
-  Array.init n (fun _ -> {v = [|true|]; a = fun () -> ()})
+    Array.init n (fun _ -> {v0 = [|false|]; v1 = [|false|]; a = fun () -> ()})
 
 let init_case rom ram t eq =
   let (i, exp) = eq in
@@ -253,14 +272,17 @@ let rec execute_tape t schedule = match schedule with
     execute_tape t tl
 
 let setup_inputs t raw_inputs nb_inputs =
-    Array.blit (Array.map (fun x -> {v = [|x|]; a = (fun x -> x)}) raw_inputs) 0 t 0 nb_inputs
+    Array.blit (Array.map (fun x -> {v0 = [|x|]; v1 = [|x|]; a = (fun x -> x)}) raw_inputs) 0 t 0 nb_inputs
 
 let inputs_cycle t nb_inputs inputs cycle =
   Array.blit inputs (cycle*nb_inputs) t 0 nb_inputs
 
 let outputs_cycle t ofs_outputs nb_outputs =
   let o = Array.sub t ofs_outputs nb_outputs in
-  Array.to_list (Array.map (fun a -> a.v.(0)) o)
+  current_value_in_v0 := not !current_value_in_v0;
+  let result =  Array.to_list (Array.map (fun a -> (curv a).(0)) o) in
+  current_value_in_v0 := not !current_value_in_v0;
+  result
 
 let simulate p p_eqs get_input put_output is_input_available =
   let nb_cases = nb_identifiers p in
@@ -278,5 +300,10 @@ let simulate p p_eqs get_input put_output is_input_available =
   while is_input_available () do
       let () = setup_inputs t (get_input ()) nb_inputs in
       let () = execute_tape t schedule in
-      put_output (outputs_cycle t nb_inputs nb_outputs)
+      put_output (outputs_cycle t nb_inputs nb_outputs);
+      (* Format.printf "Tape before :\n%!";
+      print_tape t;
+      Format.printf "Tape after :\n%!"; *)
+      current_value_in_v0 := not !current_value_in_v0; 
+      (* print_tape t; *)
   done
