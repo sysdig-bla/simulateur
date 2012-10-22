@@ -192,16 +192,6 @@ let ebinop v1 v2 = function
   | And -> ebinop_aux v1 v2 (fun b1 b2 -> b1 && b2)
   | Nand -> ebinop_aux v1 v2 (fun b1 b2 -> not (b1 && b2))
 
-let rec read_memory r i l w = match w / l with
-  | 0 -> Array.sub r.(i) 0 w
-  | _ -> Array.append r.(i) (read_memory r (i + 1) l (w - l))
-
-let rec write_memory r v1 i l w = match w / l with
-  | 0 -> Array.blit v1 0 r.(i) 0 w
-  | _ -> Array.blit v1 0 r.(i) 0 l;
-    let v2 = Array.sub v1 l ((Array.length v1) - l - 1) in
-    write_memory r v2 (i + 1) l (w - l)
-
 (* Sets the value of a variable, in the right field according to the
  * current_value_in_v0 flag. *)
 let setv t i v =
@@ -210,7 +200,7 @@ let setv t i v =
     else
         t.(i).v1 <- v
 
-let interpret t rom ram i1 = function
+let interpret t i1 = function
   | Earg a -> fun () ->
     let v = evalue t a in
     setv t i1 v
@@ -228,16 +218,16 @@ let interpret t rom ram i1 = function
     if v1.(0)
     then setv t i1 (evalue t a2)
     else setv t i1 (evalue t a3)
-  | Erom (l, w, a) -> fun () -> 
-    let i2 = int_of_argument t a in
-    setv t i1 (read_memory rom i2 l w)
-  | Eram (l, w, a1, a2, a3, a4) -> fun () ->
-    let i2 = int_of_argument t a1 in
-    let i3 = int_of_argument t a3 in
-    let v = evalue t a4 in
-    let () = setv t i1 (read_memory ram i2 l w) in
-    if bool_of_argument t a2
-    then write_memory ram v i3 l w
+  | Erom (l, w, a) ->
+    let r = Array.init l (fun _ -> Array.make w false) in
+    fun () -> setv t i1 r.(int_of_argument t a)
+  | Eram (l, w, ra, we, wa, d) -> 
+    let r = Array.init l (fun _ -> Array.make w false) in
+    fun () -> begin
+      setv t i1 r.(int_of_argument t ra);
+      if bool_of_argument t we
+        then r.(int_of_argument t wa) <- evalue t d
+    end
   | Econcat (a1, a2) -> fun () ->
     let v1 = evalue t a1 in
     let v2 = evalue t a2 in
@@ -255,15 +245,15 @@ let interpret t rom ram i1 = function
 let make_tape n =
     Array.init n (fun _ -> {v0 = [|false|]; v1 = [|false|]; a = fun () -> ()})
 
-let init_case rom ram t eq =
+let init_case t eq =
   let (i, exp) = eq in
-  let a = interpret t rom ram i exp in
+  let a = interpret t i exp in
   t.(i).a <- a
 
-let rec init_tape t rom ram eqs = match eqs with
+let rec init_tape t eqs = match eqs with
   | [] -> () 
-  | eq :: tl -> let () = init_case t rom ram eq in
-    init_tape t rom ram tl
+  | eq :: tl -> let () = init_case t eq in
+    init_tape t tl
 
 let rec execute_tape t schedule = match schedule with
   | [] -> () 
@@ -292,7 +282,7 @@ let simulate p p_eqs get_input put_output is_input_available debug_mode =
   let t = make_tape nb_cases in
   let rom = Array.init 1024 (fun _ -> Array.make 32 false) in
   let ram = Array.init 8192 (fun _ -> Array.make 32 false) in
-  let () = init_tape rom ram t eqs in
+  let () = init_tape t eqs in
   
   (*let () = print_list schedule in*)
   while is_input_available () do
