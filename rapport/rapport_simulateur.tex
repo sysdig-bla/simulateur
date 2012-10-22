@@ -16,9 +16,7 @@
 \date{\today}
 
 \maketitle
-
-\huge Viendez écrire ! C'est fun ! Surtout avec \LaTeX.
-\normalsize
+%\normalsize
 
 \section{Algorithme}
 
@@ -96,7 +94,9 @@ edge [bend right]  node {} (C)
 \section{Implémentation}
 
 Nous avons réutilisé le parser et le lexer fournis dans le TP1, ainsi que les types définis dans \texttt{netlist\_ast.ml}.
-Nous avons écrit le reste, en séparant le code (dans la mesure du possible) en modules indépendants :
+Nous avons écrit le reste, en séparant le code (dans la mesure du possible) en modules indépendants.
+Les variables sont converties en entiers afin de faciliter l'écriture
+du simulateur dans l'ensemble.
 \begin{itemize}
     \item \texttt{Graph} : représentation des graphes et tri topologique ;
     \item \texttt{Netlist\_proxy} : traduction des noms de variables en entiers, extraction des dépendances ;
@@ -106,23 +106,33 @@ Nous avons écrit le reste, en séparant le code (dans la mesure du possible) en
 
 \section{Problèmes rencontrés}
 
+Notre programme simule effectivement les circuits
+simples comportant des registres.
 \begin{itemize}
-    \item Ceci
-    \item Cela
+    \item L'ajout de registres et de nappes de fils n'a pas posé de
+grosse difficulté.
+    \item Nous avons aussi tenté de prendre en compte les RAM et ROM,
+apparement en avance par rapport au calendrier, mais nous n'avons pas
+compris leur fonctionnement dans la netlist ;
+    \item Le fichier ram.net pose problème : $\_l\_14 =
+CONCAT(\_l\_9\_19,*), \_l\_9\_19 = AND(\_l\_7\_21,*), \_l\_7\_21 =
+SELECT(0,\_l\_14)$, où $\_l\_7\_21$ et $\_l\_9\_19$ semblent au final
+correspondre à un même fil dans la nappe $\_l\_14$.
 \end{itemize}
 
 \section{Améliorations possibles}
 
 \begin{itemize}
-    \item Ajouter le support des opérations RAM et ROM ;
-    \item Ajouter un mode de traitement par lot (pour calculer d'un seul coup les sorties après $n$ cycles sur un jeu d'entrées) ;
+    \item Support des opérations RAM et ROM ;
+    \item Mode de traitement par lot (pour calculer d'un seul coup les sorties après $n$ cycles sur un jeu d'entrées) ;
+    \item Lecture des données plus propre (elle est en boucle
+infinie pour l'instant) ;
     \item Mieux séparer les fonctions dans des modules différents ;
-    \item …
+    \item Optimisation de notre programme en vitesse d'exécution.
 \end{itemize}
 
-\section{Autre chose ?}
+% \section{Autre chose ?}
 
-ouais, et toi ?
 
 \end{document}
 
