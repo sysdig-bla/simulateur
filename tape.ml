@@ -245,15 +245,15 @@ let interpret t i1 = function
 let make_tape n =
     Array.init n (fun _ -> {v0 = [|false|]; v1 = [|false|]; a = fun () -> ()})
 
-let init_case rom ram t eq =
+let init_case t eq =
   let (i, exp) = eq in
-  let a = interpret t rom ram i exp in
+  let a = interpret t i exp in
   t.(i).a <- a
 
-let rec init_tape t rom ram eqs = match eqs with
+let rec init_tape t eqs = match eqs with
   | [] -> () 
-  | eq :: tl -> let () = init_case t rom ram eq in
-    init_tape t rom ram tl
+  | eq :: tl -> let () = init_case t eq in
+    init_tape t tl
 
 let rec execute_tape t schedule = match schedule with
   | [] -> () 

@@ -1,6 +1,6 @@
 open Tape
 open Netlist_ast
-open Graph 
+open Graph
 
 (* Ce code ne fait rien d'intéressant, mais uniquement :
     * La gestion des arguments donnés en ligne de commande
