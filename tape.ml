@@ -218,7 +218,7 @@ let interpret t i1 = function
     if v1.(0)
     then setv t i1 (evalue t a2)
     else setv t i1 (evalue t a3)
-  | Erom (l, w, a) ->
+  | Erom (l, w, a) -> (**C'EST 2^l !!!!!!!!!!!!!!!!!!!!!!!**)
     let r = Array.init l (fun _ -> Array.make w false) in
     fun () -> setv t i1 r.(int_of_argument t a)
   | Eram (l, w, ra, we, wa, d) -> 
