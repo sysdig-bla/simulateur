@@ -206,23 +206,23 @@ let rec write_memory r v1 i l w = match w / l with
  * current_value_in_v0 flag. *)
 let setv t i v =
     if !current_value_in_v0 then
-        t.(i).v1 <- v
-    else
         t.(i).v0 <- v
+    else
+        t.(i).v1 <- v
 
 let interpret t rom ram i1 = function
   | Earg a -> fun () ->
     let v = evalue t a in
     setv t i1 v
   | Ereg i2 -> fun () ->
-    setv t i1 (curv t.(i2))
+    setv t i1 (if !current_value_in_v0 then t.(i2).v0 else t.(i2).v1)
   | Enot a -> fun () ->
     let v = evalue t a in
     setv t i1 (enot v)
   | Ebinop (o, a1, a2) -> fun () ->
     let v1 = evalue t a1 in
     let v2 = evalue t a2 in
-    setv t i1 (ebinop v1 v2 o)
+    setv t i1 (ebinop v1 v2 o);
   | Emux (a1, a2, a3) -> fun () ->
     let v1 = evalue t a1 in
     if v1.(0)
@@ -279,9 +279,7 @@ let inputs_cycle t nb_inputs inputs cycle =
 
 let outputs_cycle t ofs_outputs nb_outputs =
   let o = Array.sub t ofs_outputs nb_outputs in
-  current_value_in_v0 := not !current_value_in_v0;
   let result =  Array.to_list (Array.map (fun a -> (curv a).(0)) o) in
-  current_value_in_v0 := not !current_value_in_v0;
   result
 
 let simulate p p_eqs get_input put_output is_input_available =
