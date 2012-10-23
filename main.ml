@@ -9,15 +9,19 @@ open Graph
 
 (* Parsing of the arguments *)
 let usage = Printf.sprintf
-"Usage: %s [-bd] netlist"
+"Usage: %s [-b batch] [-d] netlist"
 (Filename.basename Sys.argv.(0))
 
 let batch_mode = ref false
 let debug_mode = ref false
+let batch_in = ref Scanf.Scanning.stdin
 
 let optlist = [
-    ("-b", Arg.Unit (fun () -> batch_mode := true), " batch mode");
-    ("-d", Arg.Unit (fun () -> debug_mode := true), " debug mode");
+    ("-b", Arg.String
+      (fun s -> batch_mode := true; batch_in :=
+        Scanf.Scanning.from_file s),
+      "\tBatch mode. Read input from file 'batch'");
+    ("-d", Arg.Unit (fun () -> debug_mode := true), "\tDebug mode");
 ]
 
 (* Fonction utilitaires *)
@@ -50,27 +54,14 @@ let main () =
             (* Loads the netlist *)
             let pr = Netlist.read_file h in 
             let proxy = Netlist_proxy.create_from_program pr in
-            let cycles_count = ref 0 in
+            let cycles_left =
+              ref (Scanf.bscanf !batch_in " %d " (fun x -> x)) in
+            let cycles = ref 0 in
             
-            (* The next 3 functions are needed for the batch mode.
-             * It's not implemented yet. *)
-            let get_input_b () = [| [| false; false; false |] |] in
-
-            let is_input_available_b () =
-                if !cycles_count < 3 then
-                    (incr cycles_count; true)
-                else false in
-
-            let put_output_b lst =
-                List.iter (fun i -> Printf.printf "%s "
-                    (bool_array_to_string i)) lst;
-                Format.printf "\n"
-            in
-
             (* Reads the input from the standard input *)
             let input_i_array = Array.make (Netlist_proxy.nb_inputs proxy) [| |] in
             let get_input_i () =
-                Format.printf "Step %d:\n%!" (!cycles_count + 1);
+                Format.printf "Step %d:\n%!" (!cycles + 1);
                 let i = ref 0 in
                 while !i < Netlist_proxy.nb_inputs proxy do
                     Printf.printf "%s ? %!" (Netlist_proxy.get_name proxy !i);
@@ -86,7 +77,9 @@ let main () =
             in
 
             (* To stop the program, interrupt it with ^C *)
-            let is_input_available_i () = true
+            let is_input_available_i () =
+                incr cycles;
+                true
             in
 
             (* Prints the output to the standard output *)
@@ -94,11 +87,26 @@ let main () =
                 let nbinputs = Netlist_proxy.nb_inputs proxy in
                 let tab = Array.of_list lst in
                 for i = 0 to Netlist_proxy.nb_outputs proxy - 1 do
-                    Printf.printf "=> %s = %s\n%!"
+                    Printf.printf "> %s = %s\n%!"
                     (Netlist_proxy.get_name proxy (nbinputs+i))
                     (bool_array_to_string tab.(i))
                 done;
-                incr cycles_count
+            in
+
+            (* The next 3 functions are needed for the batch mode *)
+            let get_input_b () =
+              Array.init (Netlist_proxy.nb_inputs proxy)
+                (fun _ -> Scanf.bscanf !batch_in " %s " string_to_bool_array)
+            in
+
+            let is_input_available_b () =
+                if !cycles_left > 0 then
+                    (decr cycles_left; incr cycles; true)
+                else false in
+
+            let put_output_b lst =
+                Printf.printf "Step %d\n" !cycles;
+                put_output_i lst;
             in
 
             (* Simulates the netlist *)
