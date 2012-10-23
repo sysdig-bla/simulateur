@@ -9,18 +9,22 @@ open Graph
 
 (* Parsing of the arguments *)
 let usage = Printf.sprintf
-"Usage: %s [-b batch] [-d] netlist"
+"Usage: %s [-b batch] [-r rdata] [-d] netlist"
 (Filename.basename Sys.argv.(0))
 
 let batch_mode = ref false
 let debug_mode = ref false
 let batch_in = ref Scanf.Scanning.stdin
+let rdata = ref Memdata.empty
 
 let optlist = [
+    ("-r", Arg.String
+      (fun s -> rdata := Memdata.from_file s),
+      "\tROM/RAM initialization data.");
     ("-b", Arg.String
       (fun s -> batch_mode := true; batch_in :=
         Scanf.Scanning.from_file s),
-      "\tBatch mode. Read input from file 'batch'");
+      "\tBatch mode.");
     ("-d", Arg.Unit (fun () -> debug_mode := true), "\tDebug mode");
 ]
 
