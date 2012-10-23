@@ -19,7 +19,7 @@
  *)
 
 open Netlist_proxy
-
+open Utilities
 
 (** Types.                                                                  **)
 
@@ -62,18 +62,6 @@ type tape = case array
 (* Erom : addr size, word size, read addr                                    *)
 (* Eram : addr size, word size, read addr, write enable, write addr, data    *)
 
-
-(** Conversion de types.                                                    **)
-
-let int_of_value v =
-  let n = Array.length v in
-  let i = ref 0 in
-  for j = (n - 1) downto 0 do
-    if v.(j)
-    then i := 1 + 2 * !i
-    else i := 2 * !i
-  done;
-  !i
 
   (* This flags tells wether the current value is stored
    * in v0 or v1.
@@ -147,14 +135,6 @@ let print_tape t =
     | x ->  x.(0)
   in
   let () = Array.iter (fun c -> Printf.printf "%b\t" (aux c)) t in
-  Printf.printf "\n"
-
-let rec print_list = function
-  | [] -> Printf.printf "\n"
-  | i :: l -> Printf.printf "%d; " i; print_list l
-
-let rec print_value v =
-  Array.iter (fun b -> Printf.printf "%b; " b) v;
   Printf.printf "\n"
 
 
@@ -292,14 +272,18 @@ let simulate p p_eqs get_input put_output is_input_available debug_mode =
       let () = setup_inputs t (get_input ()) nb_inputs in
       let () = execute_tape t schedule in
       put_output (outputs_cycle t nb_inputs nb_outputs);
-  
+   
       if debug_mode then
       begin    
           for i = 0 to nb_cases - 1 do
-              Printf.printf "%s : %b\n%!" (Netlist_proxy.get_name p i) (if
-                  !current_value_in_v0 then t.(i).v0.(0) else t.(i).v1.(0))
+              Printf.printf "%s : %s\n%!"
+		  (Netlist_proxy.get_name p i)
+		  (bool_array_to_string
+			(if !current_value_in_v0 then
+				t.(i).v0
+			else t.(i).v1))
           done
       end;
 
       current_value_in_v0 := not !current_value_in_v0; 
-  done
+ done

@@ -1,6 +1,7 @@
 open Tape
 open Netlist_ast
 open Graph
+open Utilities
 
 (* Ce code ne fait rien d'intéressant, mais uniquement :
     * La gestion des arguments donnés en ligne de commande
@@ -23,22 +24,6 @@ let optlist = [
       "\tBatch mode. Read input from file 'batch'");
     ("-d", Arg.Unit (fun () -> debug_mode := true), "\tDebug mode");
 ]
-
-(* Fonction utilitaires *)
-let string_to_bool_array s =
-    if (String.length s = 0) then
-        raise (Scanf.Scan_failure "");
-    Array.init (String.length s)
-        (fun i -> if (s.[i] <> '0' && s.[i] <> '1') then
-               raise (Scanf.Scan_failure ""); s.[i] = '1')
-
-let bool_array_to_string t =
-    let nb = Array.length t in
-    let str = String.make nb ' ' in
-    for i = 0 to nb-1 do
-        str.[i] <- (if t.(i) then '1' else '0')
-    done;
-    str
 
 
 let main () =
