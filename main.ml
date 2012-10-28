@@ -65,7 +65,7 @@ let main () =
             (* Reads the input from the standard input *)
             let input_i_array = Array.make (Netlist_proxy.nb_inputs proxy) [| |] in
             let get_input_i () =
-                Format.printf "Step %d:\n%!" (!cycles + 1);
+                Format.printf "Step %d:\n%!" !cycles;
                 let i = ref 0 in
                 while !i < Netlist_proxy.nb_inputs proxy do
                     Printf.printf "%s ? %!" (Netlist_proxy.get_name proxy !i);
@@ -116,10 +116,10 @@ let main () =
             (* Simulates the netlist *)
             try
                 if !batch_mode then
-                    simulate proxy pr.p_eqs get_input_b put_output_b
+                    simulate proxy pr.p_eqs Memdata.empty get_input_b put_output_b
                     is_input_available_b !debug_mode
                 else
-                    simulate proxy pr.p_eqs get_input_i put_output_i 
+                    simulate proxy pr.p_eqs Memdata.empty get_input_i put_output_i 
                     is_input_available_i !debug_mode
             with Cycle ->
                 Printf.printf "Impossible de simuler la netlist : elle contient un cycle.\n%!";
@@ -127,3 +127,4 @@ let main () =
     )
 
 let () = main ()
+let () = Printf.printf "%f" (Sys.time ())

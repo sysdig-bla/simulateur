@@ -205,7 +205,11 @@ let rec fast_2 = function
   | n when n mod 2 = 0 -> let x = fast_2 (n/2) in x*x
   | n -> let x = fast_2 (n/2) in x*x*2
 
-let interpret t i1 = function
+(* Converts a 1 dimensional length n*m array to a n*m matrix *)
+let barray2_of_barray t n m =
+  Array.init n (fun i -> Array.init m (fun j -> t.(m*i+j)))
+
+let interpret p rdata t i1 = function
   | Earg a -> fun () ->
     let v = evalue t a in
     setv t i1 v
@@ -224,10 +228,18 @@ let interpret t i1 = function
     then setv t i1 (evalue t a2)
     else setv t i1 (evalue t a3)
   | Erom (l, w, a) -> 
-    let r = Array.init (fast_2 l) (fun _ -> Array.make w false) in
+    let size = fast_2 l in
+    let r = try
+        barray2_of_barray
+          (Memdata.get_data rdata (Netlist_proxy.get_name p i1)) size w
+      with Memdata.Not_found -> Array.init size (fun _ -> Array.make w false) in
     fun () -> setv t i1 r.(int_of_argument t a)
   | Eram (l, w, ra, we, wa, d) -> 
-    let r = Array.init (fast_2 l) (fun _ -> Array.make w false) in
+    let size = fast_2 l in
+    let r = try
+        barray2_of_barray
+          (Memdata.get_data rdata (Netlist_proxy.get_name p i1)) size w
+      with Memdata.Not_found -> Array.init size (fun _ -> Array.make w false) in
     fun () -> begin
       setv t i1 r.(int_of_argument t ra);
       if bool_of_argument t we
@@ -250,15 +262,15 @@ let interpret t i1 = function
 let make_tape n =
     Array.init n (fun _ -> {v0 = [|false|]; v1 = [|false|]; a = fun () -> ()})
 
-let init_case t eq =
+let init_case p rdata t eq =
   let (i, exp) = eq in
-  let a = interpret t i exp in
+  let a = interpret p rdata t i exp in
   t.(i).a <- a
 
-let rec init_tape t eqs = match eqs with
+let rec init_tape p rdata t eqs = match eqs with
   | [] -> () 
-  | eq :: tl -> let () = init_case t eq in
-    init_tape t tl
+  | eq :: tl -> let () = init_case p rdata t eq in
+    init_tape p rdata t tl
 
 let rec execute_tape t schedule = match schedule with
   | [] -> () 
@@ -277,7 +289,7 @@ let outputs_cycle t ofs_outputs nb_outputs =
   let result =  Array.to_list (Array.map (fun a -> (curv a)) o) in
   result
 
-let simulate p p_eqs get_input put_output is_input_available debug_mode =
+let simulate p p_eqs rdata get_input put_output is_input_available debug_mode =
   let nb_cases = nb_identifiers p in
   let schedule = Scheduler.schedule_program p in
   let nb_inputs = nb_inputs p in
@@ -285,7 +297,7 @@ let simulate p p_eqs get_input put_output is_input_available debug_mode =
 
   let eqs = convert_equations p p_eqs in
   let t = make_tape nb_cases in
-  let () = init_tape t eqs in
+  let () = init_tape p rdata t eqs in
   
   (*let () = print_list schedule in*)
   while is_input_available () do
@@ -303,3 +315,64 @@ let simulate p p_eqs get_input put_output is_input_available debug_mode =
 
       current_value_in_v0 := not !current_value_in_v0; 
   done
+
+(* 2e version (interprete sans stocker les fonctions dans un tableau) *)
+
+let interpret2 t i1 = function
+  | Earg a ->
+    let v = evalue t a in
+    setv t i1 v
+  | Ereg i2 ->
+    setv t i1 (if !current_value_in_v0 then t.(i2).v1 else t.(i2).v0)
+  | Enot a ->
+    let v = evalue t a in
+    setv t i1 (enot v)
+  | Ebinop (o, a1, a2) ->
+    let v1 = evalue t a1 in
+    let v2 = evalue t a2 in
+    setv t i1 (ebinop v1 v2 o);
+  | Emux (a1, a2, a3) ->
+    let v1 = evalue t a1 in
+    if v1.(0)
+    then setv t i1 (evalue t a2)
+    else setv t i1 (evalue t a3)
+  | Erom _ 
+  | Eram _ -> assert false
+  | Econcat (a1, a2) ->
+    let v1 = evalue t a1 in
+    let v2 = evalue t a2 in
+    setv t i1 (Array.append v1 v2)
+  | Eslice (s, l, a) ->
+    let v = evalue t a in
+    setv t i1 (Array.sub v s l)
+  | Eselect (i, a) ->
+    let v = evalue t a in
+    setv t i1 [|v.(i)|]
+
+
+let simulate2 p p_eqs get_input put_output is_input_available debug_mode =
+  let nb_cases = nb_identifiers p in
+  let schedule = Scheduler.schedule_program p in
+  let nb_inputs = nb_inputs p in
+  let nb_outputs = nb_outputs p in
+
+  let eqs = convert_equations p p_eqs in
+  let t = make_tape nb_cases in
+  
+  (*let () = print_list schedule in*)
+  while is_input_available () do
+      let () = setup_inputs t (get_input ()) nb_inputs in
+      let () = List.iter (fun (i,exp)->interpret2 t i exp) eqs in
+      put_output (outputs_cycle t nb_inputs nb_outputs);
+  
+      if debug_mode then
+      begin    
+          for i = 0 to nb_cases - 1 do
+              Printf.printf "%s : %b\n%!" (Netlist_proxy.get_name p i) (if
+                  !current_value_in_v0 then t.(i).v0.(0) else t.(i).v1.(0))
+          done
+      end;
+
+      current_value_in_v0 := not !current_value_in_v0; 
+  done
+
