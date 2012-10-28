@@ -59,23 +59,22 @@ let main () =
             let pr = Netlist.read_file h in 
             let proxy = Netlist_proxy.create_from_program pr in
             let cycles_left =
-              ref (Scanf.bscanf !batch_in " %d " (fun x -> x)) in
+              ref 0 in
             let cycles = ref 0 in
             
             (* Reads the input from the standard input *)
             let input_i_array = Array.make (Netlist_proxy.nb_inputs proxy) [| |] in
             let get_input_i () =
-                Format.printf "Step %d:\n%!" !cycles;
+                Printf.printf "Step %d:\n%!" !cycles;
                 let i = ref 0 in
                 while !i < Netlist_proxy.nb_inputs proxy do
                     Printf.printf "%s ? %!" (Netlist_proxy.get_name proxy !i);
                     try
                         input_i_array.(!i) <- Scanf.bscanf (Scanf.Scanning.stdin)
-                            " %s" string_to_bool_array;
+                            " %s " (fun s -> print_int (String.length
+s);string_to_bool_array s);
                         incr i
-                    with Scanf.Scan_failure(_) ->
-                        let _ = Scanf.bscanf (Scanf.Scanning.stdin) " %s" (fun x
-                        -> x) in () 
+                    with Scanf.Scan_failure(_) -> ()
                 done;
                 input_i_array
             in
@@ -115,14 +114,19 @@ let main () =
 
             (* Simulates the netlist *)
             try
-                if !batch_mode then
-                    simulate proxy pr.p_eqs Memdata.empty get_input_b put_output_b
-                    is_input_available_b !debug_mode
+                if !batch_mode
+                  then begin
+                    cycles_left :=
+                      Scanf.bscanf !batch_in " %d " (fun x -> x);
+                    simulate2 proxy pr.p_eqs (*!rdata*) get_input_b put_output_b
+                      is_input_available_b !debug_mode
+                  end
                 else
-                    simulate proxy pr.p_eqs Memdata.empty get_input_i put_output_i 
-                    is_input_available_i !debug_mode
+                    simulate2 proxy pr.p_eqs (*!rdata*) get_input_i put_output_i 
+                      is_input_available_i !debug_mode
             with Cycle ->
-                Printf.printf "Impossible de simuler la netlist : elle contient un cycle.\n%!";
+                Printf.printf
+                  "Impossible de simuler la netlist : elle contient un cycle.\n%!";
         end
     )
 

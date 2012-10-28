@@ -1,0 +1,21 @@
+Produce a batch input file adapted to hadder.net
+
+h(undred)adder.net is a netlist produced with 'mjc.byte test/nadder.mj' (minijazz compiler
+provided with TP1), which adds two integers a and b, written in binary
+strings of length n.
+
+	~/(...)/simulateur/test $ ocaml hadder_gen.ml > hadder.b
+
+input : 2 integers
+- nb of cycles (nb of additions to do)
+- n
+
+output :
+(nb cycles)
+(nb cycles) lines with two pseudo-random binary strings of length n
+
+Execution on the result :
+
+	~/(...)/simulateur $ ./main.byte -b test/hadder.b test/hadder.net
+
+function arrays are faster

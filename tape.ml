@@ -279,7 +279,7 @@ let rec execute_tape t schedule = match schedule with
     execute_tape t tl
 
 let setup_inputs t raw_inputs nb_inputs =
-    Array.blit (Array.map (fun x -> {v0 = x; v1 = x; a = (fun y -> y)}) raw_inputs) 0 t 0 nb_inputs
+    Array.blit (Array.map (fun x -> {v0 = x; v1 = x; a = (fun () -> ())}) raw_inputs) 0 t 0 nb_inputs
 
 let inputs_cycle t nb_inputs inputs cycle =
   Array.blit inputs (cycle*nb_inputs) t 0 nb_inputs
@@ -357,12 +357,16 @@ let simulate2 p p_eqs get_input put_output is_input_available debug_mode =
   let nb_outputs = nb_outputs p in
 
   let eqs = convert_equations p p_eqs in
+
+  let sorted_eqs = List.fold_right (fun i -> fun l ->
+    try (i,List.assoc i eqs)::l with _ -> l) schedule [] in
+
   let t = make_tape nb_cases in
   
   (*let () = print_list schedule in*)
   while is_input_available () do
       let () = setup_inputs t (get_input ()) nb_inputs in
-      let () = List.iter (fun (i,exp)->interpret2 t i exp) eqs in
+      let () = List.iter (fun (i,exp)->interpret2 t i exp) sorted_eqs in
       put_output (outputs_cycle t nb_inputs nb_outputs);
   
       if debug_mode then
