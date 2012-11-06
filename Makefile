@@ -1,6 +1,6 @@
 
 all:
-	ocamlbuild main.byte 
+	ocamlbuild -use-menhir main.byte 
 
 clean:
 	rm -f *\~ *.cm[oi]
