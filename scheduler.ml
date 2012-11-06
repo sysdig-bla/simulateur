@@ -1,7 +1,7 @@
 
 (*
  * Types pour les instructions converties (on change les
- * noms de variables en leurs indentifiants entiers)
+ * noms de variables en leurs identifiants entiers)
  *)
 
 open Netlist_ast
