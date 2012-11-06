@@ -91,10 +91,17 @@ let rec fast_2 = function
 let barray2_of_barray t n m =
   Array.init n (fun i -> Array.init m (fun j -> t.(m*i+j)))
 
+let interpret_arg t i1 = function
+	| Aconst v ->
+		fun () -> setv t i1 v
+	| Avar i2 ->
+		fun () -> let v = curv t.(i2) in setv t i1 v
+
+(* Baptiste : Je vais modifier interpret pour plus de clarté et surtout aller
+   au bout de l'idée de "gel des fonctions". (cf. interpret_arg) *)
+
 let interpret p rdata t i1 = function
-  | Earg a -> fun () ->
-    let v = evalue t a in
-    setv t i1 v
+  | Earg a -> interpret_arg t i1 a
   | Ereg i2 -> fun () ->
     setv t i1 (if !current_value_in_v0 then t.(i2).v1 else t.(i2).v0)
   | Enot a -> fun () ->
