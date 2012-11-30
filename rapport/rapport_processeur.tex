@@ -28,14 +28,13 @@ adresse)$ : quand l'heure actuelle correspond à celle en tête de file, le
 code à l'adresse correspondante est exécuté. Ce code est écrit dans le
 langage assembleur décrit ci-dessous. Il est stocké dans une ROM.
 
-Cette file est gérée directement au niveau matériel : le tri des éléments
-est géré en inversant deux voisins quand c'est nécessaire. Ce tri se
-parallélise et est donc plus rapide que les tris classiques.
+Cette file est gérée directement au niveau matériel avec un r\'{e}seau de
+tri. Ce tri se parallélise et est donc plus rapide que les tris classiques.
 
 Cette file permet de gérer les exceptions du calendrier : par exemple,
 pour rajouter un jour les années bissextiles, on insère dans la file un
-évènement à la date du 28 février de la prochaine année bissextile, qui permettera de
-mettre à jour la date correctement et d'insérer un nouvel évènement pour
+évènement à la date du 28 février de la prochaine année bissextile,
+qui permettera de mettre à jour la date correctement et d'insérer un nouvel évènement pour
 le prochain 28 février d'une année bissextile.
 
 \subsection{Mémoire}
