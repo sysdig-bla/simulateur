@@ -37,6 +37,35 @@ pour rajouter un jour les années bissextiles, on insère dans la file un
 qui permettera de mettre à jour la date correctement et d'insérer un nouvel évènement pour
 le prochain 28 février d'une année bissextile.
 
+\begin{figure}
+    \centering
+    \tikzstyle{bloc} = [draw, rectangle, minimum height=3em, minimum width=6em]
+    \tikzstyle{input} = [coordinate]
+    \tikzstyle{output} = [coordinate]
+    \begin{tikzpicture}[auto, node distance=1cm,>=latex']
+        \node [bloc] (file) {File de priorité};
+        \node [bloc, node distance=3cm, right of=file] (comparateur) {Comparateur};
+        \node [bloc, node distance=3cm, right of=comparateur] (horloge) {Horloge};
+        \node [bloc, above=of comparateur] (rom) {ROM};
+        \node [bloc, above=of rom] (decodeur) {Décodeur d'instructions};
+        \node [bloc, above=of decodeur] (ALU) {ALU};
+        \node [bloc, node distance=3cm, right of=ALU] (registres) {Registres};
+        \node [bloc, node distance=3cm, left of=ALU] (RAM) {Petite RAM};
+
+        \draw [->] (file) -- (comparateur);
+        \draw [->] (horloge) -- (comparateur);
+        \draw [<-] (rom) -- (comparateur);
+        \draw [<->] (rom) -- (decodeur);
+        \draw [->] (decodeur) -| node [left] {push} (file);
+        \draw [->] (decodeur) -| node [right] {set} (horloge);
+        \draw [<->] (decodeur) -- (ALU);
+        \draw [->] (decodeur) -> (RAM);
+        \draw [->] (decodeur) -> (registres);
+    \end{tikzpicture}
+    \caption{Architecture du processeur}
+\end{figure}
+
+
 \subsection{Mémoire}
 
 On a une RAM de petite taille (par exemple pour stocker les résultats
