@@ -1,0 +1,51 @@
+(* Sur la représentation des entiers :
+   On choisit une représentation sur ? bits.
+   Bit 0 de poid faible.
+   Bit ? représentant le signe. *)
+
+const size = 32
+
+adder <n> (a:[n], b:[n], c_in) = (o:[n], c_out) where
+	if n = 0
+	then
+		o = [];
+		c_out = c_in
+	else
+		(o1, c_out1) = adder <n-1> (a[0..(n-2)], b[0..(n-2)], c_in);
+		o2 = (a[n-1] ^ b[n-1]) ^ c_out1;
+		c_out = (a[n-1] & b[n-1]) + ((a[n-1] ^ b[n-1]) & c_out1);
+		o = o1 . o2
+	end if
+end where
+
+substracter <n> (a:[n], b:[n]) = (o:[n]) where
+	c = not b;
+	(o, k) = adder <n> (a, c, 1)
+end where
+
+
+(*
+(* TO DO *)
+multiplicater <n> (a:[n], b:[n]) = (o:[2*n]) where
+	if n = 0
+	then
+		o = []
+	else
+		if n = 2 * (n / 2)
+		then
+			c = multiplicater <n/2> (a[0..n/2-1], b[0..n/2-1]);
+			d = multiplicater <n/2> (a[n/2..n-1], b[0..n/2-1]);
+			e = multiplicater <n/2> (a[0..n/2-1], b[n/2..n-1]);
+			f = multiplicater <n/2> (a[n/2..n-1], b[n/2..n-1]);
+			(o, c1) = adder(0 . c, d . 0, 0)
+		else
+			o = a . 0
+		end if
+	end if
+end where
+*)
+
+
+main (i) = (o) where
+	o = i;
+end where
