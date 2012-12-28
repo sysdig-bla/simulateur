@@ -1,6 +1,8 @@
 open Netlist_ast
 open Netgraph
 
+exception Interrupt
+
 (* Use hashtables to unify nodes *)
 (* Substitution tables, logically equivalent nodes are unified *)
 let subs_tbl:(id2,node) Hashtbl.t = Hashtbl.create 171
@@ -11,18 +13,28 @@ let binop_tbl:(bin2*id2*id2,node) Hashtbl.t = Hashtbl.create 149
 
 let mux_tbl:(id2*id2*id2,node) Hashtbl.t = Hashtbl.create 127
 
+let queue=ref []
+let push x = queue:=x::!queue
+
 let reset_tbl g =
   Hashtbl.clear not_tbl;
   Hashtbl.clear binop_tbl;
   Hashtbl.add subs_tbl c0.id c0;
   Hashtbl.add subs_tbl c1.id c1;
   Hashtbl.add not_tbl c0.id c1;
-  Hashtbl.add not_tbl c1.id c0;
-  set_marks 0
+  Hashtbl.add not_tbl c1.id c0
 
-let subs n m = Hashtbl.replace subs_tbl n.id m; m
+let subs n m =
+  n.eq <- m.eq;
+  n.d <- m.d;
+  Hashtbl.replace subs_tbl n.id m;
+  m
 
-let find n = Hashtbl.find subs_tbl n.id
+let find n =
+  try
+    Hashtbl.find subs_tbl n.id
+  with
+  | Not_found -> subs n n
 
 let rec mk_not m =
   try
@@ -107,13 +119,8 @@ and reduce1 n =
   if n.mark=1
   then find n
   else begin
+    print n.id;
     let m = match n.eq with
-      | New -> raise Incomplete
-      | Input _ -> subs n n
-
-      | Const true -> subs n c1
-      | Const false -> subs n c0
-
       | Node m ->
           let m=reduce1 m in
           subs n m
@@ -133,19 +140,43 @@ and reduce1 n =
           let c = reduce1 c in
           subs n (mk_mux a b c)
 
-      | Reg m ->
-          subs n n
-
-      | Rom ra ->
-          subs n n
-
-      | Ram (ra,we,wa,d) -> 
-          subs n n
+      | Reg m -> begin
+          let m = find m in
+          try
+            match m.eq with
+            | Const false -> subs n c0 
+            | Reg p when p.id=n.id -> subs n c0
+            | _ -> raise Interrupt
+          with | Interrupt -> subs n n
+          end
+      | Rom (ra,mem) -> find n
+      | Ram (ra,we,wa,d,mem) ->
+          push n;
+          find n;
+      | Input _ -> subs n n
+      | Const true -> subs n c1
+      | Const false -> subs n c0
+      | New -> raise Incomplete
     in n.mark <- 1; m
   end
 
-(* Not reducing registers at first *)
 let reduce1 g =
-  reset_tbl g;
-  List.iter (fun a -> Array.iteri (fun i n -> a.(i) <- reduce1 a.(i)) a) g.reach
+  set_marks g 0;
+  List.iter (fun a -> Array.iteri (fun i n -> a.(i) <- reduce1 a.(i)) a)
+    g.output;
+  List.iter
+    (fun n ->
+      match n.eq with
+        | Ram (ra,we,wa,d,mem) ->
+            ignore (subs n (mk_node (Ram (ra,find we,wa,find d,mem)) 0))
+        | _ -> assert false) !queue;
+  queue := [];
+  Array.iter
+    (fun a ->
+      Array.iteri (fun i n -> a.loc.(i) <- find a.loc.(i)) a.loc)
+    g.address
 
+let reduce g =
+  reset_tbl g;
+  reduce1 g;
+  reduce1 g

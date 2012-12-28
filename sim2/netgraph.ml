@@ -1,10 +1,19 @@
 open Netlist_ast
 
+(* The idea is to build an explicit graph to be able to simplify it
+ * by uniting common expressions and lines
+ * (getting rid of Concat/Split/Select first) *)
+
 type id2 = int
 
 type bin2 = binop
 
-type node = {
+type addr = {
+  ad_i:int;
+  loc:node array;
+}
+
+and node = {
   id:id2;
   mutable eq:exp;
   mutable d:int;
@@ -20,16 +29,19 @@ and exp =
   | Bin of bin2*node*node
   | Mux of node*node*node
   | Reg of node
-  | Rom of node array
-  | Ram of node array*node*node array*node
+  | Rom of addr*bool array
+  | Ram of addr*node*addr*node*bool array
   (*wa,we,wa,d*)
 
+  (* Somewhat complicated, we could use less information *)
 type graph = {
-  output:node array list;
-  reach:node array list;
-  named:node array Smap.t;
+  output:node array list;(* output nodes and registers *)
+  named:node array Smap.t; (* all specified nodes *)
+  address:addr array; (* For big word size memories, since we split everything
+  to one line units we have to keep a common data structure *)
+  in_order:ident array;
+  out_order:ident array;
 }
-  (* output nodes, reachable nodes, all specified nodes *)
 
 exception Cyclic of string
 
@@ -39,18 +51,32 @@ exception Netls_err of string
 
 let ntlserr s = raise (Netls_err s)
 
-let c0 = {id= -1;eq=Const false;d= -1;mark=0}
-let c1 = {id= -2;eq=Const true;d= -1;mark=0}
+let print = Printf.printf "%d\n"
+
+(* Constants *)
+let c0 = {id= -2;eq=Const false;d= -1;mark=0}
+let c1 = {id= -1;eq=Const true;d= -1;mark=0}
 
 let all_nodes = ref []
 let free = ref (-1)
+let free2 = ref (-1)
 
+(* We will need a lot of nodes and structural
+ * comparison between nodes is out of question
+ * since we have cyclic structures *)
 let fresh =
   fun () -> incr free; !free
 
+let fresh2 =
+  fun () -> incr free2; !free2
+
+(* Reset should only be done AFTER reduction *)
 let reset () =
   all_nodes := [];
-  free := -1
+  free := -1;
+  free2 := -1
+
+let new_addr ra = {ad_i=fresh2(); loc=ra}
 
 let mk_node eq d =
   let n = {id=fresh();eq=eq;d=d;mark=0} in
@@ -59,13 +85,29 @@ let mk_node eq d =
 
 let new_node _ = mk_node New 0
 
+(* Create a simple graph out of a netlist 
+ * (simple as in close to the original data) *)
 let mk_graph p =
   let wrong_size id = ntlserr (id^" has incompatible size") in
+
+  (* Reorganize equations for quick access from left member *)
   let eqset =
     List.fold_left (fun s (id,exp) -> Smap.add id exp s) Smap.empty p.p_eqs in
+
+  (* Used nodes (* Most dead nodes i.e. not necessary to
+   * compute outputs, are forgotten in our structure *) *)
   let active:(ident,node array) Hashtbl.t = Hashtbl.create 127 in
+
+  (* The way to avoid infinite loop in a cycle through a register or ROM/RAM
+   * stop scanning at Reg/RAM/ROM and come again when they are "secured" *)
   let queue = ref [] in
+
+  (* Nodes we can reach all the graph from, i.e. all ALIVE registers/R[OA]M
+   * (there is some redundancy) *)
   let reach = ref [] in
+
+  (* Keep all "address" structures in one place *)
+  let addr = ref [] in
   let sz = Array.length in
   let size id =
     try
@@ -73,6 +115,8 @@ let mk_graph p =
     with
       | Not_found -> ntlserr (id^" undeclared")
   in
+
+  (* Create nodes as they are needed *)
   let find x =
     try
       Hashtbl.find active x
@@ -82,12 +126,18 @@ let mk_graph p =
         Hashtbl.add active x n;
         n
   in
+
+  (* Some inputs may be dead nodes but for coherence they are needed 
+   * (the netlist states they are inputs,
+   * if you don't ask for them that's just weird) *)
   List.iter
     (fun x ->
       Array.iter 
 	(fun n ->
 	    n.eq <- Input x;
 	    n.mark <- 1) (find x)) p.p_inputs;
+
+      (* Just draw the graph using the equations as edges... *)
   let make_const b =
     Array.init (sz b) (fun i -> if b.(i) then c1 else c0)
   in
@@ -111,10 +161,11 @@ let mk_graph p =
             (fun i n -> n.eq <- Node a.(i); n.d <- a.(i).d+1) n
 
         | Ereg a ->
+          queue := a:: !queue;
           let a = find a in
           if sz a <> sz n then wrong_size id;
           Array.iteri
-            (fun i n -> n.eq <- Reg a.(i); n.d <- 0) n
+          (fun i n -> n.eq <- Reg a.(i); n.d <- 0) n
 
         | Enot a ->
           let a = get_arg a in
@@ -141,12 +192,16 @@ let mk_graph p =
               n.eq <- Mux(k.(0),b.(i),c.(i));
               n.d<-max (max k.(0).d b.(i).d) c.(i).d +1) n
 
+        (* We need to fill the memory that early because we won't have
+         * easy access to variable names very soon *)
         | Erom (addrs,ws,a) ->
           let ra = find_arg a in
           if sz ra <> addrs then ntlserr (id^" rom has bad address size");
           if sz n <> ws then wrong_size id;
-          Array.iter
-            (fun n -> n.eq <- Rom ra; n.d<-0) n
+          let ra = new_addr ra in
+          addr := ra::!addr;
+          Array.iteri
+            (fun i n -> n.eq <- Rom (ra,Memo.get id ws i); n.d<-0) n
 
         | Eram (addrs,ws,ra_,we_,wa_,dat_) ->
           let ra = find_arg ra_ in
@@ -158,8 +213,21 @@ let mk_graph p =
           if sz wa <> addrs then ntlserr (id^" ram has bad address size");
           if sz dat <> ws then ntlserr (id^" ram has bad data size");
           if sz n <> ws then wrong_size id;
-          Array.iteri (fun i n -> n.eq <- Ram (ra,we.(0),wa,dat.(i)); n.d<-0) n
+          let ra = new_addr ra in
+          let wa = new_addr wa in
+          addr := ra::wa::!addr;
+          Array.iteri
+            (fun i n ->
+              n.eq <- Ram (ra,we.(0),wa,dat.(i),Memo.get id ws i);
+              n.d<-0) n
 
+        (* Representing only single lines enables us to first discard
+         * this information at the cost of time and space
+         * for the topoligical sort.
+         * Doing this later is more complicated but we save resources
+         * while sorting.
+         * Given the size of the circuit to be simulated,
+         * overhead is negligible *)
         | Econcat (a,b) ->
           let a = get_arg a in
           let b = get_arg b in
@@ -176,7 +244,8 @@ let mk_graph p =
 
         | Eslice (i,j,a) ->
           let a = get_arg a in
-          if i<0 || i>=sz a || j<i || j>=sz a then invalid_arg "Illegal slice";
+          if i<0 || i>=sz a || j<i || j>=sz a
+            then invalid_arg "Illegal slice";
           if sz n <> j-i+1 then wrong_size id;
           Array.iteri (fun k n -> n.eq <- Node a.(i+k);n.d<-a.(0).d+1) n
 
@@ -192,22 +261,36 @@ let mk_graph p =
     | Avar id -> add_node id
     | Aconst b -> make_const b
   in
+
+  (* As I said, begin from outputs to only build needed nodes *)
   let g = List.map add_node p.p_outputs in
+
+  (* Completing the search when it was stopped at memory units
+   * Reg/RAM/ROM *)
   while !queue <> [] do
     let h = List.hd !queue in
     queue := List.tl !queue;
-    reach := add_node h::!reach
+    let k = find h in
+    if k.(0).mark = 0
+      then reach := k::!reach;
+    ignore (add_node h);
   done;
-  {output=g;reach=g@ !reach;named=Hashtbl.fold Smap.add active Smap.empty}
+  {
+    output=g @ !reach;
+    named=Hashtbl.fold Smap.add active Smap.empty;
+    address=Array.of_list (List.rev !addr);
+    in_order=Array.of_list p.p_inputs;
+    out_order=Array.of_list p.p_outputs;
+  }
 
-let set_marks x =
+let set_marks g x =
   List.iter
     (fun n -> n.mark <- x)
     !all_nodes
 
 (* Using lists of lists, grouping nodes at the same depth *)
 let toposort g =
-  set_marks 0;
+  set_marks g 0;
   let rec add (d,x) = function
     | h::t when d>0 -> h::add (d-1,x) t
     | h::t when d=0 -> (x::h)::t
@@ -220,8 +303,6 @@ let toposort g =
     else begin
       x.mark <- 1;
       match x.eq with
-        | New -> raise Incomplete
-
         | Input _ -> add x acc
 
         | Const _ -> acc
@@ -235,22 +316,32 @@ let toposort g =
         | Mux (a,b,c) ->
             sort (sort (sort (add x acc) a) b) c
 
-        | Rom a ->
-            Array.fold_left sort (add x acc) a
+        | Rom (a,_) ->
+            Array.fold_left sort (add x acc) a.loc
 
-        | Ram (a,n,b,m) ->
-            let l = Array.fold_left sort (add x acc) a in
-            let l = Array.fold_left sort l b in
+        | Ram (a,n,b,m,_) ->
+            let l = Array.fold_left sort (add x acc) a.loc in
+            let l = Array.fold_left sort l b.loc in
             sort (sort l n) m
+
+        | New -> raise Incomplete
     end
   in
-  List.fold_left sort [] (List.flatten (List.map Array.to_list g.output))
+  List.fold_left sort [[]] (List.flatten (List.map Array.to_list g.output))
 
 let string_of_bin2 = function
   | Or -> "Or"
   | And -> "And"
   | Xor -> "Xor"
   | Nand -> "Nand"
+
+let stringofbarray b =
+  let s = String.make (Array.length b) '0' in
+  for i = 0 to Array.length b -1 do
+    if b.(i) then s.[i] <- '1';
+  done;
+  s
+
 
 let print_exp h = function
     | New -> Format.fprintf h "new"
@@ -261,18 +352,20 @@ let print_exp h = function
     | Not n -> Format.fprintf h "Not %d" n.id
     | Bin (o,m,n) -> Format.fprintf h "%s %d %d" (string_of_bin2 o) m.id n.id
     | Mux (a,b,c) -> Format.fprintf h "Mux %d %d %d" a.id b.id c.id
-    | Rom n -> Format.fprintf h "Rom %d...%d" n.(0).id n.(Array.length n-1).id
-    | Ram (ra,we,wa,d) ->
-      let ras = Array.length ra in
-      let was = Array.length wa in
-      Format.fprintf h "Ram ra:%d...%d we:%d wa:%d...%d d:%d"
-	ra.(0).id ra.(ras-1).id we.id wa.(0).id wa.(was-1).id d.id
+    | Rom (n,mem) -> Format.fprintf h "Rom %d...%d:%s" n.loc.(0).id
+    n.loc.(Array.length n.loc-1).id (stringofbarray mem)
+    | Ram (ra,we,wa,d,mem) ->
+      let ras = Array.length ra.loc in
+      let was = Array.length wa.loc in
+      Format.fprintf h "Ram ra:%d...%d we:%d wa:%d...%d d:%d:%s"
+	ra.loc.(0).id ra.loc.(ras-1).id we.id wa.loc.(0).id wa.loc.(was-1).id d.id
+  (stringofbarray mem)
 
 let print_eq h n =
   Format.fprintf h "%d = %a" n.id print_exp n.eq
 
 let print_var h id n =
-  Format.fprintf h "%s :@\n  @[" id;
+  Format.fprintf h "%s@\n        @[" id;
   for i = 0 to Array.length n - 1 do
     print_eq h n.(i);
     if i<Array.length n - 1 then Format.fprintf h "@\n";
