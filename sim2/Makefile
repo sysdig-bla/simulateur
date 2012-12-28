@@ -1,3 +1,9 @@
+netgraph:
+	ocamlbuild -ocamlc 'ocamlc -g' -use-menhir test.byte
+
 test:
-	ocamlbuild -ocamlc 'ocamlc -g' -use-menhir netgraph.byte
-	ocamlrun -b netgraph.byte ../../tp1/test/nadder.net
+	ocamlrun -b test.byte ../test/nadder.net
+
+clean:
+	ocamlbuild -clean
+	rm -f *\~
