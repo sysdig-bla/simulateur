@@ -16,15 +16,20 @@ and exp =
   | Input of string
   | Const of bool
   | Node of node
-  | Reg of node
   | Not of node
   | Bin of bin2*node*node
   | Mux of node*node*node
+  | Reg of node
   | Rom of node array
   | Ram of node array*node*node array*node
+  (*wa,we,wa,d*)
 
-type graph = node array list*(ident,node array) Hashtbl.t
-  (* output nodes, all specified nodes *)
+type graph = {
+  output:node array list;
+  reach:node array list;
+  named:node array Smap.t;
+}
+  (* output nodes, reachable nodes, all specified nodes *)
 
 exception Cyclic of string
 
@@ -37,11 +42,22 @@ let ntlserr s = raise (Netls_err s)
 let c0 = {id= -1;eq=Const false;d= -1;mark=0}
 let c1 = {id= -2;eq=Const true;d= -1;mark=0}
 
+let all_nodes = ref []
+let free = ref (-1)
+
 let fresh =
-  let free = ref (-1) in
   fun () -> incr free; !free
 
-let new_node _ = {id=fresh();eq=New;d=0;mark=0}
+let reset () =
+  all_nodes := [];
+  free := -1
+
+let mk_node eq d =
+  let n = {id=fresh();eq=eq;d=d;mark=0} in
+  all_nodes := n::!all_nodes;
+  n
+
+let new_node _ = mk_node New 0
 
 let mk_graph p =
   let wrong_size id = ntlserr (id^" has incompatible size") in
@@ -49,6 +65,7 @@ let mk_graph p =
     List.fold_left (fun s (id,exp) -> Smap.add id exp s) Smap.empty p.p_eqs in
   let active:(ident,node array) Hashtbl.t = Hashtbl.create 127 in
   let queue = ref [] in
+  let reach = ref [] in
   let sz = Array.length in
   let size id =
     try
@@ -175,23 +192,22 @@ let mk_graph p =
     | Avar id -> add_node id
     | Aconst b -> make_const b
   in
-  let g = List.map (fun id -> add_node id) p.p_outputs in
+  let g = List.map add_node p.p_outputs in
   while !queue <> [] do
-    let h =List.hd !queue in
+    let h = List.hd !queue in
     queue := List.tl !queue;
-    ignore (add_node h);
+    reach := add_node h::!reach
   done;
-  ((g,active):graph)
+  {output=g;reach=g@ !reach;named=Hashtbl.fold Smap.add active Smap.empty}
 
-let set_marks (_,h) x =
-  Hashtbl.iter
-    (fun s n ->
-      Array.iter (fun n -> n.mark <- x) n)
-    h
+let set_marks x =
+  List.iter
+    (fun n -> n.mark <- x)
+    !all_nodes
 
 (* Using lists of lists, grouping nodes at the same depth *)
-let toposort (g,h) =
-  set_marks (g,h) 0;
+let toposort g =
+  set_marks 0;
   let rec add (d,x) = function
     | h::t when d>0 -> h::add (d-1,x) t
     | h::t when d=0 -> (x::h)::t
@@ -228,7 +244,7 @@ let toposort (g,h) =
             sort (sort l n) m
     end
   in
-  List.fold_left sort [] (List.flatten (List.map Array.to_list g))
+  List.fold_left sort [] (List.flatten (List.map Array.to_list g.output))
 
 let string_of_bin2 = function
   | Or -> "Or"
@@ -263,11 +279,14 @@ let print_var h id n =
   done;
   Format.fprintf h "@]@\n"
 
-let print_graph ch (g,h) =
-  Hashtbl.iter (print_var ch) h
+let print_graph ch g =
+  Smap.iter (print_var ch) g.named
 
 let print_sgraph ch l =
   List.iter
     (fun l ->
       List.iter (fun x -> Format.fprintf ch "%d %a @\n" x.d print_eq x;) l;
       Format.fprintf ch "@\n";) l
+
+let nodenum l =
+  List.fold_left (fun s l -> s+List.length l) 0 l

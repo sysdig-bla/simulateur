@@ -71,6 +71,6 @@ let rec iter f = function
     begin
       match t.x with
         | None -> ()
-        | Some x -> f x
+        | Some x -> f t.loc x
     end;
     Array.iter (iter f) t.next
