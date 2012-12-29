@@ -1,4 +1,5 @@
-schedule:
+netlist_sim2native:
+	ocamlbuild -ocamlc 'ocamlc -g' -use-menhir netlist_sim2.byte
 
 netgraph:
 	ocamlbuild -ocamlc 'ocamlc -g' -use-menhir test.byte

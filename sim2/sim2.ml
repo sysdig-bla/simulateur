@@ -1,57 +1,62 @@
 open Netlist_ast
 open Netgraph
 open Scheduler
-open Memory
+open Memo
 
 type input = bool array
-type output = string -> bool array
+type output = bool array
 
 type tape = {
   t:bool array array;
   output:bool array;
   outcells:int array;
   mutable time:int;
-  sch0:batch list;
-  sch1:batch list;
+  sch:batch list;
   ma:memaddress;
 }
 
 type circuit = {
   in_length:int;
   out_length:int;
+  whereis:string -> int;
+  size:string -> int;
   tape:tape
 }
 
-let new_circuit p m =
+let new_circuit p =
   let g = mk_graph p in
-  let sch1,maddr,sch0,out_order,n = batch g in
+  let sch,ma,out_order,n,in_length = batch g in
   let t=Array.make_matrix 2 n false in
   t.(0).(n-1) <- true;
-  t.(1).(n-1) <- false;
+  t.(1).(n-1) <- true;
   let ol = Array.length out_order in
+  let out_pos,out_size = get_output_loc g in
   {
     tape = {
       t=t ;
-      output=Array.make ol;
+      output=Array.make ol false;
       outcells=out_order;
       time=0;
-      sch=sch
+      sch=sch;
+      ma=ma
     };
-    in_length = n;
+    in_length = in_length;
     out_length = ol;
+    whereis = (fun s -> Smap.find s out_pos);
+    size = (fun s -> Smap.find s out_size);
   }
 
-let len = Array.length in
+let len = Array.length
 
 let int_of_addr t a =
   let c = ref 0 in
   for i = len a-1 downto 0 do
     c := if t.(a.(i)) then !c * !c + 1 else !c * !c
-  done
+  done;
+  !c
 
-let rec update_address t = function
-  | (i,a)::tl -> i := int_of_addr t a; update_address t tl
-  | [] -> ()
+let update_address t l =
+  Array.iter (fun (i,a) -> i := int_of_addr t a) l
       
 
 let execute t u = function
@@ -76,7 +81,7 @@ let execute t u = function
       done
   | BReg (start,op) ->
       for i = 0 to len op -1 do
-        u.(start+i) <- t.(op.(i));
+        t.(start+i) <- u.(op.(i));
       done
   | BRom (start,op) ->
       for i = 0 to len op -1 do
@@ -97,19 +102,39 @@ let rec follow_schedule t u = function
       execute t u h;
       follow_schedule t u tl
 
-let step {
+let step ({
   in_length=il; out_length=ol;
   tape={
     t=t; time=d;
-    sch0=sch0; sch1=sch1;
+    sch=sch;
     output=o; outcells=oc;
     ma=ma}
-  } input =
-    Array.blit input 0 t 0 il;
-    follow_schedule t.(d land 1) [||] sch1;
-    update_address t.(d land 1) ma;
-    follow_schedule t.(d land 1) t.(1- (d land 1)) sch0;
+  } as c) input =
+    let t1 = d land 1 in
+    let t2 = 1-t1 in
+    Array.blit input 0 t.(t1) 0 il;
+    update_address t.(t1) ma;
+    follow_schedule t.(t1) t.(t2) sch;
     for i = 0 to ol-1 do
-      o.(i) <- t.(oc.(i));
+      o.(i) <- t.(t1).(oc.(i));
     done;
+    c.tape.time <- c.tape.time+1;
     o
+
+let print_raw h b =
+  for i = 0 to Array.length b-1 do
+    Format.fprintf h "%d" (if b.(i) then 1 else 0)
+  done
+
+let print_matrix h t =
+  for i = 0 to Array.length t-1 do
+    for j = 0 to Array.length t.(i)-1 do
+      Format.fprintf h "%d" (if t.(i).(j) then 1 else 0)
+    done;
+    Format.fprintf h "@\n"
+  done
+
+let print_state h c =
+  Format.fprintf h "Step %d | %a@\n"
+    c.tape.time print_raw c.tape.output;
+  print_matrix h c.tape.t;

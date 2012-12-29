@@ -1,5 +1,6 @@
 open Netgraph
 open Reducegraph
+open Scheduler
 
 let g =
     mk_graph (Netlist.read_file Sys.argv.(1))
@@ -16,6 +17,10 @@ let () =
   print_sgraph (toposort g);
   Format.printf "Netlist 4 :@\n  @[%a@]@\n"
   print_graph g
+
+let () =
+  let l,output,out_order,n,in_length = batch g in
+  Format.printf "Schedule :@\n  @[%a@]@\n" print_sch l
 
   (*
 let () =

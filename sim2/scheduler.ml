@@ -16,6 +16,23 @@ type batch =
 
 type memaddress = (int ref * int array) array
 
+(* get rid of empty tasks *)
+let rec clean_sch = function
+  | [] -> []
+  | h::tl ->
+      match h with
+      | BNot (_,t) | BReg (_,t) when Array.length t=0 ->
+          clean_sch tl
+      | BAnd (_,t) | BOr (_,t) when Array.length t=0 ->
+          clean_sch tl
+      | BMux (_,t) when Array.length t=0 ->
+          clean_sch tl
+      | BRom (_,t) when Array.length t=0 ->
+          clean_sch tl
+      | BRam (_,t) when Array.length t=0 ->
+          clean_sch tl
+      | _ -> h::clean_sch tl
+
 
 let batch g =
   let aol = Array.of_list in
@@ -38,7 +55,8 @@ let batch g =
   (* Begin converting addresses to a suitable format *)
   let convert_addr a = (ref 0),Array.map (fun n -> n.id) a.loc in
   assert
-    (g.address.(Array.length g.address-1).ad_i = Array.length g.address-1);
+    (Array.length g.address = 0 ||
+    g.address.(Array.length g.address-1).ad_i = Array.length g.address-1);
   let memaddr = Array.map convert_addr g.address in
 
   (* Although they have the same type of elements,
@@ -66,6 +84,7 @@ let batch g =
                 mem
                 )
                )::ram) t
+        | Input _ -> batch0 reg rom ram t
         | _ -> assert false
   in
   let rec batch1 a o n m = function
@@ -156,7 +175,11 @@ let batch g =
   (* Picking output cells *)
   let outnodes =
     Array.to_list
-      (Array.map (fun s -> Smap.find s g.named) g.out_order) in
+      (Array.map
+        (fun s -> Array.map (fun n->find n.id) (Smap.find s g.named))
+        g.out_order) in
+
+  let memaddr = Array.map (fun (r,a) -> (r,Array.map find a)) memaddr in
 
   (* I chose to put the memory ops first because it somewhat felt
    * more natural. But I think it should be symmetric
@@ -164,4 +187,56 @@ let batch g =
    * happen inbetween, so things could be done the opposite way.
    * It seems however that with the other way we have to split the two parts
    * in one time step, whereas here we will be able to do it all at once *)
-  l0@l1,Array.concat outnodes,n+2;
+  clean_sch l0 @ clean_sch l1,memaddr,Array.concat outnodes,n+2,in_count
+
+let get_output_loc g = 
+  let r = ref 0 in
+  let out_pos,out_size = Array.fold_left
+    (fun (set1,set2) s ->
+      let set1 = Smap.add s !r set1 in
+      let sz = Array.length (Smap.find s g.named) in
+      let set2 = Smap.add s sz set2 in
+      r := !r+sz;
+      set1,set2)
+    (Smap.empty,Smap.empty) g.out_order in
+  out_pos,out_size
+
+let get_input_loc g = 
+  let r = ref 0 in
+  let in_pos,in_size = Array.fold_left
+    (fun (set1,set2) s ->
+      let set1 = Smap.add s !r set1 in
+      let sz = Array.length (Smap.find s g.named) in
+      let set2 = Smap.add s sz set2 in
+      r := !r+sz;
+      set1,set2)
+    (Smap.empty,Smap.empty) g.in_order in
+  in_pos,in_size
+
+let print_sch_item h = function
+  | BNot (i,a) -> Format.fprintf h "Not %3d -" i;
+      Array.iter (Format.fprintf h " %d") a
+  | BAnd (i,a) -> Format.fprintf h "And %3d -" i;
+      Array.iter (fun (x,y) -> Format.fprintf h "(%d,%d) " x y) a
+  | BOr (i,a) -> Format.fprintf h "Or  %3d -" i;
+      Array.iter (fun (x,y) -> Format.fprintf h "(%d,%d) " x y) a
+  | BMux (i,a) -> Format.fprintf h "Mux %3d -" i;
+      Array.iter (fun (x,y,z) -> Format.fprintf h "(%d,%d,%d) " x y z) a
+  | BReg (i,a) -> Format.fprintf h "Reg %3d -" i;
+      Array.iter (Format.fprintf h "%d ") a
+  | BRom (i,_) -> Format.fprintf h "ROM %3d" i;
+  | BRam (i,_) -> Format.fprintf h "RAM %3d" i
+
+let print_sch h l =
+  List.iter (fun x -> print_sch_item h x; Format.fprintf h "@\n") l
+
+let print_outnodes h (out_order,o_loc,o_sz,p_outputs) =
+  List.iter
+    (fun s ->
+      let loc=Smap.find s o_loc in
+      let sz =Smap.find s o_sz in
+      Format.fprintf h "%s - " s;
+      for i = 0 to sz-1 do
+        Format.fprintf h "%d " out_order.(loc+i);
+      done;
+      Format.fprintf h "@\n") p_outputs

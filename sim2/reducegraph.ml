@@ -53,31 +53,39 @@ and mk_binop o a b =
   try
     Hashtbl.find binop_tbl (o,i,j)
   with
-  | Not_found -> let m =
+  | Not_found ->
+    let m =
       let d = max a.d b.d +1 in
       match o with
       | Xor ->
-          let p = mk_binop Or a b in
-          let q = mk_binop And a b in
-          let q = mk_not q in
-          mk_binop And p q
+          begin match a.eq,b.eq with
+          | Const true,_ -> mk_not b
+          | _,Const true -> mk_not a
+          | Const false,_ -> b
+          | _,Const false -> a
+          | _,_ when a.id=b.id -> c0
+          | _,_ ->
+              let p = mk_binop Or a b in
+              let q = mk_binop And a b in
+              let q = mk_not q in
+              mk_binop And p q
+          end
 
       | Nand ->
           let r = mk_binop And a b in
           mk_not r
 
       | And ->
-          begin
-           match a.eq,b.eq with
-            | Const true,_ -> b
-            | _,Const true -> a
-            | Const false,_ | _,Const false -> c0
-            | _,_ when a.id=b.id -> a
-            | Not e, Not f ->
-                let p = mk_binop Or e f in
-                mk_not p
-            | _,_ ->
-                mk_node (Bin (And,a,b)) d;
+          begin match a.eq,b.eq with
+          | Const true,_ -> b
+          | _,Const true -> a
+          | Const false,_ | _,Const false -> c0
+          | _,_ when a.id=b.id -> a
+          | Not e, Not f ->
+              let p = mk_binop Or e f in
+              mk_not p
+          | _,_ ->
+              mk_node (Bin (And,a,b)) d;
           end
 
       | Or ->
@@ -119,7 +127,6 @@ and reduce1 n =
   if n.mark=1
   then find n
   else begin
-    print n.id;
     let m = match n.eq with
       | Node m ->
           let m=reduce1 m in
@@ -147,7 +154,7 @@ and reduce1 n =
             | Const false -> subs n c0 
             | Reg p when p.id=n.id -> subs n c0
             | _ -> raise Interrupt
-          with | Interrupt -> subs n n
+          with | Interrupt -> push n; find n
           end
       | Rom (ra,mem) -> find n
       | Ram (ra,we,wa,d,mem) ->
@@ -168,7 +175,9 @@ let reduce1 g =
     (fun n ->
       match n.eq with
         | Ram (ra,we,wa,d,mem) ->
-            ignore (subs n (mk_node (Ram (ra,find we,wa,find d,mem)) 0))
+            n.eq <- Ram (ra,find we,wa,find d,mem)
+        | Reg m ->
+            n.eq <- Reg (find m)
         | _ -> assert false) !queue;
   queue := [];
   Array.iter
