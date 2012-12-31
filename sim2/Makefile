@@ -11,7 +11,7 @@ schedule:
 	ocamlbuild scheduler.cmx
 
 test:
-	ocamlrun -b test.byte ../test/nadder.net
+	./netlist_sim2.byte clock_div.net -c 2 -v
 
 clean:
 	ocamlbuild -clean
