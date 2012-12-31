@@ -16,7 +16,7 @@ let seconds = ref 0.
 let net_file = ref ""
 
 let usage = Printf.sprintf
-"Usage: %s [-m memory.mem] [-i IPS] [-disp-schedule] [-v] [-vb]"
+"Usage: %s [-m memory.mem] [-c CPS] [-disp-schedule] [-v] [-vb]"
   (Filename.basename Sys.argv.(0))
 
 let optlist = [
@@ -59,7 +59,7 @@ let sim p =
     if !debug_verbose then
       print_state std c
     else if !verbose then
-      Format.printf "STEP %d - %a@\n"
+      Format.printf "STEP %d - %a@."
         c.tape.time print_raw o
   done
 
@@ -78,12 +78,11 @@ let real_time cps p =
   for i = 0 to !steps do
     let o = step c a in
     if !verbose then
-      Format.printf "STEP %d - %a@\n"
+      Format.printf "STEP %d - %a@."
       c.tape.time print_raw o;
-    let t = elapsed () -. (float_of_int i)/.cps in
-    if t>=0.05 then ignore (wait 0.05)
+    let t = (float_of_int i)/.cps -. elapsed () in
+    if t>0.05 then ignore (wait t)
   done
-    
 
 let main () =
   let collect s = net_file := s in
