@@ -12,6 +12,7 @@ let debug_verbose = ref false
 let verbose = ref false
 let steps = ref 30
 let seconds = ref 0.
+let screen = ref false
 
 let net_file = ref ""
 
@@ -33,7 +34,8 @@ let optlist = [
   ("-s",Arg.Set_int steps,
   "Nb of steps (for fast mode)");
   ("-timeout",Arg.Set_float seconds,
-  "Duration of program in seconds")
+  "Duration of program in seconds");
+  ("-disp",Arg.Set screen,"Display the screen (only in slow mode)");
 ]
 
 
@@ -75,8 +77,12 @@ let real_time cps p =
   let cps = float_of_int cps in
   let start = gtod () in
   let elapsed () = gtod () -. start in
+  if !screen then
+      Display.open_display ();
   for i = 0 to !steps do
     let o = step c a in
+    if !screen then
+        Display.update o;
     if !verbose then
       Format.printf "STEP %d - %a@."
       c.tape.time print_raw o;
