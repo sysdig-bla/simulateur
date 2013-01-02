@@ -87,13 +87,13 @@ let sim c =
   let elapsed () = gtod () -. start in
   if !debug_verbose then
     print_state std c;
-  for i = 1 to !steps do
+  for i = 0 to !steps do
     let o=step c a in
     if !debug_verbose then
       print_state std c
     else if !verbose then
       Format.printf "STEP %d - %a@."
-        c.tape.time print_raw o;
+        i print_raw o;
     if !seconds > 0. && elapsed()> !seconds
 	then exit 0
   done
@@ -113,7 +113,7 @@ let real_time cps c =
         Display.update o;
     if !verbose then
       Format.printf "STEP %d - %a@."
-      c.tape.time print_raw o;
+      i print_raw o;
     let t = (float_of_int i)/.cps -. elapsed () in
     if t>0.05 then ignore (wait t)
   done

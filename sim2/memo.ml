@@ -7,6 +7,10 @@ let bool_of_char = function
   | '1' -> 1
   | _ -> 2
 
+let print_matrix =
+  Array.iter (fun a -> Array.iter (fun x -> Printf.printf "%d " (if x
+then 1 else 0)) a)
+
 let load_data filename =
   try
     let h = open_in filename in
@@ -15,8 +19,8 @@ let load_data filename =
       let s = Scanf.fscanf h "%s " (fun s -> s) in
       let k,ws = Scanf.fscanf h "%d %d" (fun x y-> x,y) in
       let j = ref 0 in
-      let b = Array.make_matrix ws k false in
-      while !j < k*ws do
+      let b = Array.make_matrix ws (1 lsl k) false in
+      while !j < (1 lsl k)*ws do
         match bool_of_char (Scanf.fscanf h "%c" (fun c -> c)) with
           | 0 -> b.(!j mod ws).(!j/ws) <- false; incr j;
           | 1 -> b.(!j mod ws).(!j/ws) <- true; incr j;
@@ -30,15 +34,19 @@ let load_data filename =
 let dataflag = ref true
 
 (* Default to 0 and print warning *)
-let get s n i =
+let get s ws sz =
+  let out =
   try
-    let k = (Smap.find s !data).(i) in
-    if Array.length k <> n
+    let k = Smap.find s !data in
+    if Array.length k <> ws || Array.length k.(0) <> sz
     then raise Not_found
     else k
   with
   | Not_found
   | Invalid_argument _ ->
-      if !dataflag then Printf.eprintf "Incomplete data...Default to 0\n";
+      if !dataflag
+        then Printf.eprintf "Incomplete data...Default to 0\n%!";
       dataflag := false;
-      Array.make n false
+      Array.make_matrix ws sz false
+  in print_matrix out;
+  out

@@ -85,6 +85,8 @@ let mk_node eq d =
 
 let new_node _ = mk_node New 0
 
+let (==) n m = n.id=m.id
+
 (* Create a simple graph out of a netlist 
  * (simple as in close to the original data) *)
 let mk_graph p =
@@ -202,8 +204,9 @@ let mk_graph p =
           if sz n <> ws then wrong_size id;
           let ra = new_addr ra in
           addr := ra::!addr;
+          let m = Memo.get id ws (1 lsl addrs) in
           Array.iteri
-            (fun i n -> n.eq <- Rom (ra,Memo.get id ws i); n.d<-0) n
+            (fun i n -> n.eq <- Rom (ra,m.(i)); n.d<-0) n
 
         | Eram (addrs,ws,ra_,we_,wa_,dat_) ->
           let ra = find_arg ra_ in
@@ -217,10 +220,11 @@ let mk_graph p =
           if sz n <> ws then wrong_size id;
           let ra = new_addr ra in
           let wa = new_addr wa in
-          addr := ra::wa::!addr;
+          addr := wa::ra::!addr;
+          let m = Memo.get id ws (1 lsl addrs) in
           Array.iteri
             (fun i n ->
-              n.eq <- Ram (ra,we.(0),wa,dat.(i),Memo.get id ws i);
+              n.eq <- Ram (ra,we.(0),wa,dat.(i),m.(i));
               n.d<-0) n
 
         (* Representing only single lines enables us to first discard

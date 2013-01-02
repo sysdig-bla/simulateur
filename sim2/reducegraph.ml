@@ -58,32 +58,32 @@ and mk_binop o a b =
       let d = max a.d b.d +1 in
       match o with
       | Xor ->
-          begin match a.eq,b.eq with
-          | Const true,_ -> mk_not b
-          | _,Const true -> mk_not a
-          | Const false,_ -> b
-          | _,Const false -> a
-          | _,_ when a.id=b.id -> c0
-          | _,_ ->
-              let p = mk_binop Or a b in
-              let q = mk_binop And a b in
-              let q = mk_not q in
-              mk_binop And p q
-          end
+          mk_mux a (mk_not b) b
 
       | Nand ->
-          let r = mk_binop And a b in
-          mk_not r
+          mk_not (mk_binop And a b)
 
       | And ->
           begin match a.eq,b.eq with
           | Const true,_ -> b
           | _,Const true -> a
           | Const false,_ | _,Const false -> c0
-          | _,_ when a.id=b.id -> a
-          | Not e, Not f ->
-              let p = mk_binop Or e f in
-              mk_not p
+
+          | _,_ when a==b -> a
+
+          | Not a,_ when a==b -> c0
+          | _,Not b when a==b -> c0
+          | Not e, Not f -> mk_not (mk_binop Or e f)
+
+          | Bin (And,a,c),_ when b==a -> mk_binop And a c
+          | Bin (And,c,a),_ when b==a -> mk_binop And a c
+          | _,Bin (And,b,c) when a==b -> mk_binop And c b
+          | _,Bin (And,c,b) when a==b -> mk_binop And c b
+          | Bin (Or,a,_),_ when a==b -> a
+          | Bin (Or,_,a),_ when a==b -> a
+          | _,Bin (Or,b,_) when a==b -> b
+          | _,Bin (Or,_,b) when a==b -> b
+
           | _,_ ->
               mk_node (Bin (And,a,b)) d;
           end
@@ -93,7 +93,9 @@ and mk_binop o a b =
           | Const false,_ -> b
           | _,Const false -> a
           | Const true,_ | _,Const true -> c1
-          | _,_ when a.id=b.id -> a
+          | _,_ when a==b -> a
+          | Not a,_ when a==b -> b
+          | _,Not b when a==b -> a
           | Not e, Not f ->
               let p = mk_binop And e f in
               mk_not p
@@ -116,6 +118,10 @@ and mk_mux a b c =
       | _,Const false,Const true -> mk_not a
       | _,Const true,_ -> mk_binop Or a c
       | _,_,Const false -> mk_binop And a b
+      | _,_,_ when b==c -> b
+      | _,_,_ when a==b -> mk_binop Or a c
+      | Not a,_,_ -> mk_mux a c b
+      | _,Not b,Not c -> mk_not (mk_mux a b c)
       | _,_,_ -> 
           mk_node (Mux (a,b,c)) (max (max a.d b.d) c.d +1);
   in
@@ -152,6 +158,9 @@ and reduce1 n =
           try
             match m.eq with
             | Const false -> subs n c0 
+            | Reg n when n==m -> subs n c0
+            | Reg m when n==m -> subs n c0
+            | _ when n==m -> subs n c0
             | _ -> raise Interrupt
           with | Interrupt -> push n; find n
           end

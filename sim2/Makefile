@@ -11,7 +11,7 @@ schedule:
 	ocamlbuild scheduler.cmx
 
 test:
-	./netlist_sim2.byte counter.net -disp-schedule -v -c 5 -s 50
+	./netlist_sim2.byte counter.net -disp-schedule -v -c 5 -s 15
 
 clean:
 	ocamlbuild -clean

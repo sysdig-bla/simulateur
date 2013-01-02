@@ -33,6 +33,14 @@ let rec clean_sch = function
           clean_sch tl
       | _ -> h::clean_sch tl
 
+let print_mem ma =
+  for i = 0 to Array.length ma-1 do
+    let (_,b) = ma.(i) in
+    for j = 0 to Array.length b-1 do
+      Printf.printf "%d " b.(j);
+    done;
+    Printf.printf "\n";
+  done
 
 let batch g =
   let aol = Array.of_list in
@@ -159,9 +167,9 @@ let batch g =
   let reg = Array.map find reg in
   let ram = Array.map (fun (a,m,b,n,mem) ->
     a,find m,b,find n,mem) ram in
-  let () =
+  (*let () =
     Array.iter (fun (_,a) ->
-      Array.iteri (fun i n -> a.(i) <- find n) a) memaddr in
+      Array.iteri (fun i n -> a.(i) <- find n) a) memaddr in*)
 
   let l0 = [
     BReg (reg_start,reg);
@@ -243,3 +251,4 @@ let print_outnodes h (out_order,o_loc,o_sz,p_outputs) =
         Format.fprintf h "%d " out_order.(loc+i);
       done;
       Format.fprintf h "@\n") p_outputs
+

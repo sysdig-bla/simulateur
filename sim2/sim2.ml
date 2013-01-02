@@ -50,8 +50,8 @@ let len = Array.length
 
 let int_of_addr t a =
   let c = ref 0 in
-  for i = len a-1 downto 0 do
-    c := if t.(a.(i)) then !c * !c + 1 else !c * !c
+  for i = 0 to len a-1 do
+    c := if t.(a.(i)) then !c * 2 + 1 else !c * 2
   done;
   !c
 
@@ -86,14 +86,14 @@ let execute t u = function
   | BRom (start,op) ->
       for i = 0 to len op -1 do
         let ra,mem=op.(i) in
-        u.(start+i) <- mem.(!ra)
+        t.(start+i) <- mem.(!ra)
       done
   | BRam (start,op) ->
       for i = 0 to len op -1 do
         let ra,we,wa,d,mem=op.(i) in
-        u.(start+i) <- mem.(!ra);
-        if t.(we) then
-          mem.(!wa) <- t.(d);
+        t.(start+i) <- mem.(!ra);
+        if u.(we) then
+          mem.(!wa) <- u.(d);
       done
 
 let rec follow_schedule t u = function
@@ -111,10 +111,10 @@ let step ({
     ma=ma}
   } as c) input =
     let t1 = d land 1 in
-    let t2 = 1-t1 in
+    let t0 = 1-t1 in
     Array.blit input 0 t.(t1) 0 il;
-    update_address t.(t1) ma;
-    follow_schedule t.(t1) t.(t2) sch;
+    update_address t.(t0) ma;
+    follow_schedule t.(t1) t.(t0) sch;
     for i = 0 to ol-1 do
       o.(i) <- t.(t1).(oc.(i));
     done;
