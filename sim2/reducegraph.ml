@@ -151,9 +151,8 @@ and reduce1 n =
           let m = find m in
           try
             match m.eq with
-            | Const false -> subs n c0 
-            | Reg p when p.id=n.id -> subs n c0
             | _ -> raise Interrupt
+            | Const false -> subs n c0 
           with | Interrupt -> push n; find n
           end
       | Rom (ra,mem) -> find n
@@ -170,7 +169,7 @@ and reduce1 n =
 let reduce1 g =
   set_marks g 0;
   List.iter (fun a -> Array.iteri (fun i n -> a.(i) <- reduce1 a.(i)) a)
-    g.output;
+    g.range;
   List.iter
     (fun n ->
       match n.eq with

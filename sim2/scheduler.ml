@@ -169,8 +169,11 @@ let batch g =
     BRam (ram_start,ram)] in
   let l1 = List.flatten l1 in
 
-  (* We should have the exact size *)
-  assert (n = !tape_index);
+  if !tape_index <> n
+    then begin
+      Printf.eprintf "%d %d\n" n !tape_index;
+      assert false;
+    end;
 
   (* Picking output cells *)
   let outnodes =
