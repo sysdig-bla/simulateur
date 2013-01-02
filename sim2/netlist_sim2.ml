@@ -16,7 +16,7 @@ let seconds = ref 0.
 let net_file = ref ""
 
 let usage = Printf.sprintf
-"Usage: %s [-m memory.mem] [-c CPS] [-disp-schedule] [-v] [-vb]"
+"Usage: %s [-m memory.mem] [-c CPS] [-disp-schedule] [-v] [-vb] [-s steps]"
   (Filename.basename Sys.argv.(0))
 
 let optlist = [
@@ -49,9 +49,15 @@ let print p =
   Format.printf "Output nodes@\n    @[%a@]@\n"
     print_outnodes (out_order,o_loc,o_sz,p.p_outputs)
 
+let gtod = Unix.gettimeofday
+
+let wait = Unix.select [] [] [] 
+
 let sim p =
   let c = new_circuit p in
   let a = Array.make c.in_length false in
+  let start = gtod () in
+  let elapsed () = gtod () -. start in
   if !debug_verbose then
     print_state std c;
   for i = 0 to !steps do
@@ -60,14 +66,12 @@ let sim p =
       print_state std c
     else if !verbose then
       Format.printf "STEP %d - %a@."
-        c.tape.time print_raw o
+        c.tape.time print_raw o;
+    if !seconds > 0. && elapsed()> !seconds
+	then exit 0
   done
 
 let sbs_sim p = failwith "Not done"
-
-let gtod = Unix.gettimeofday
-
-let wait = Unix.select [] [] [] 
 
 let real_time cps p =
   let c = new_circuit p in
