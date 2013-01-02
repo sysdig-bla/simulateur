@@ -151,8 +151,8 @@ and reduce1 n =
           let m = find m in
           try
             match m.eq with
-            | _ -> raise Interrupt
             | Const false -> subs n c0 
+            | _ -> raise Interrupt
           with | Interrupt -> push n; find n
           end
       | Rom (ra,mem) -> find n
