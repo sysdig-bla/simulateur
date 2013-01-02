@@ -152,7 +152,6 @@ and reduce1 n =
           try
             match m.eq with
             | Const false -> subs n c0 
-            | Reg p when p.id=n.id -> subs n c0
             | _ -> raise Interrupt
           with | Interrupt -> push n; find n
           end
@@ -170,7 +169,7 @@ and reduce1 n =
 let reduce1 g =
   set_marks g 0;
   List.iter (fun a -> Array.iteri (fun i n -> a.(i) <- reduce1 a.(i)) a)
-    g.output;
+    g.range;
   List.iter
     (fun n ->
       match n.eq with

@@ -35,7 +35,7 @@ and exp =
 
   (* Somewhat complicated, we could use less information *)
 type graph = {
-  output:node array list;(* output nodes and registers *)
+  range:node array list;(* output nodes, input nodes and registers *)
   named:node array Smap.t; (* all specified nodes *)
   address:addr array; (* For big word size memories, since we split everything
   to one line units we have to keep a common data structure *)
@@ -130,12 +130,14 @@ let mk_graph p =
   (* Some inputs may be dead nodes but for coherence they are needed 
    * (the netlist states they are inputs,
    * if you don't ask for them that's just weird) *)
-  List.iter
-    (fun x ->
+  let inputs = List.map
+    (fun x -> let n = find x in
       Array.iter 
-	(fun n ->
-	    n.eq <- Input x;
-	    n.mark <- 1) (find x)) p.p_inputs;
+	      (fun n ->
+	        n.eq <- Input x;
+          n.mark <- 1) n;
+        n
+    ) p.p_inputs in
 
       (* Just draw the graph using the equations as edges... *)
   let make_const b =
@@ -276,7 +278,7 @@ let mk_graph p =
     ignore (add_node h);
   done;
   {
-    output=g @ !reach;
+    range=g @ !reach @ inputs;
     named=Hashtbl.fold Smap.add active Smap.empty;
     address=Array.of_list (List.rev !addr);
     in_order=Array.of_list p.p_inputs;
@@ -327,7 +329,7 @@ let toposort g =
         | New -> raise Incomplete
     end
   in
-  List.fold_left sort [[]] (List.flatten (List.map Array.to_list g.output))
+  List.fold_left sort [[]] (List.flatten (List.map Array.to_list g.range))
 
 let string_of_bin2 = function
   | Or -> "Or"
