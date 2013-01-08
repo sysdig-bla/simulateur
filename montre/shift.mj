@@ -13,8 +13,8 @@ split<n>(a:[n]) = (e:[(n+1)/2],o:[n/2]) where
     e=a;
     o=[]
   else
-    (o1,e1)=split<n-1>(a[..n-2]);
-    e=e1.a[n-1];
+    (o1,e1)=split<n-1>(a[1..]);
+    e=a[0].e1;
     o=o1;
   end if
 end where
@@ -55,11 +55,8 @@ srlv<n,k>(a:[n],v:[k]) = c:[n] where
   end if
 end where
 
-main(a1:[s/2],a2:[(s+1)/2]) = (b:[s],c:[s],c0,b0) where
+main(a:[s]) = (b:[s],c:[s]) where
   v = 1.0.0;
-  a = a1.a2;
   b = srlv<s,3>(a,v);
   c = sllv<s,3>(a,v);
-  c0 = c[0];
-  b0 = b[0]
 end where
