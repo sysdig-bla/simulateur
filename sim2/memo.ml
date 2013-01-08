@@ -14,14 +14,14 @@ then 1 else 0)) a)
 let load_data filename =
   try
     let h = open_in filename in
-    let n = Scanf.fscanf h "%d " (fun x -> x) in
+    let n = Scanf.fscanf h " %d" (fun x -> x) in
     for i = 1 to n do
-      let s = Scanf.fscanf h "%s " (fun s -> s) in
-      let k,ws = Scanf.fscanf h "%d %d" (fun x y-> x,y) in
+      let s = Scanf.fscanf h " %s" (fun s -> s) in
+      let k,ws = Scanf.fscanf h " %d %d" (fun x y-> x,y) in
       let j = ref 0 in
       let b = Array.make_matrix ws (1 lsl k) false in
       while !j < (1 lsl k)*ws do
-        match bool_of_char (Scanf.fscanf h "%c" (fun c -> c)) with
+        match bool_of_char (Scanf.fscanf h " %c" (fun c -> c)) with
           | 0 -> b.(!j mod ws).(!j/ws) <- false; incr j;
           | 1 -> b.(!j mod ws).(!j/ws) <- true; incr j;
           | _ -> ()

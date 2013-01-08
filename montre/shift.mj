@@ -41,7 +41,25 @@ sllv<n,k>(a:[n],v:[k]) = c:[n] where
   end if
 end where
 
-main(a:[s]) = b:[s] where
-  v = 0.1.0;
-  b = sllv<s,3>(a,v);
+(* shift a to the right by value specified on k bits,
+ * least significant bit at 0 *)
+srlv<n,k>(a:[n],v:[k]) = c:[n] where
+  if n*k=0 then
+    c=a
+  else
+    (e,o) = split<n>(a);
+    e1 = srlv<(n+1)/2,k-1>(e,v[1..]);
+    o1 = srlv<n/2,k-1>(o,v[1..]);
+    b = fuse<n>(e1,o1);
+    c = muxn<n>(v[0],b[1..].0,b);
+  end if
+end where
+
+main(a1:[s/2],a2:[(s+1)/2]) = (b:[s],c:[s],c0,b0) where
+  v = 1.0.0;
+  a = a1.a2;
+  b = srlv<s,3>(a,v);
+  c = sllv<s,3>(a,v);
+  c0 = c[0];
+  b0 = b[0]
 end where

@@ -40,7 +40,6 @@ let optlist =
       " Display the screen (only in slow mode)");
   ]
 
-
 let new_circuit p =
   if !disp
     then begin
@@ -83,9 +82,20 @@ let gtod = Unix.gettimeofday
 
 let wait = Unix.select [] [] [] 
 
-let read_input tab =
+let mk_format p =
+  let rec mk cur = function
+    | [] -> []
+    | h::t ->
+        let sz = Env.find h p.p_vars in
+        (cur+sz,h)::mk (cur+sz) t
+  in
+  mk 0 p.p_inputs
+
+let read_input in_vars tab =
+  let stack = ref in_vars in
   for i = 0 to (Array.length tab - 1) do
-     Printf.printf "i[%d] : %!" i;
+     if fst (List.hd !stack) = i then stack := List.tl !stack;
+     Printf.printf "%s[%d] < %!" (snd (List.hd !stack)) i;
      tab.(i) <- Scanf.bscanf Scanf.Scanning.stdin " %c"
      (fun x -> x = '1')
   done
@@ -107,12 +117,12 @@ let sim c =
 	then exit 0
   done
 
-let sbs_sim c =
+let sbs_sim p c =
    let a = Array.make c.in_length false in
    if !screen then
 	Display.open_display ();
    for i = 0 to !steps do
-      read_input a;
+      read_input p a;
       let o = step c a in
       if !screen then
 	Display.update o;
@@ -145,7 +155,7 @@ let main () =
   let p = Netlist.read_file !net_file in
   let c = new_circuit p in
   if !s_by_s
-    then sbs_sim c
+    then sbs_sim (mk_format p) c
   else if !cps>0
     then real_time !cps c
     else sim c
