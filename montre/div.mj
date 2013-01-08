@@ -1,0 +1,24 @@
+(*
+  Implémentation d'une division par restauration,
+  pour une entrée a:[n] et b:[n] en considère :
+    m = n-1
+    c:[n] = 0:[n]
+    d:[2*n-1] = 0:[n-1] a:[n]
+    e:[2*n-1] = b:[n] 0:[n-1]
+  si d > e
+  alors
+    c[m] = 1
+    d = d - e
+    e = shift_right e
+    m = m-1
+  sinon
+    c[m] = 0
+    d = d
+    e = shift_right e
+    m = m-1
+*)
+
+
+div<n> (a:[n], b:[n]) = c:[n] where
+
+end where
