@@ -34,7 +34,7 @@ let optlist =
     ("-v",Arg.Set verbose,
       " Print output");
     ("-s",Arg.Set_int steps,
-      " Nb of steps");
+      " Number of steps");
     ("-timeout",Arg.Set_float seconds,
       " Duration of program in seconds");
     ("-disp",Arg.Set screen,
