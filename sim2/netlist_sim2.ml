@@ -20,23 +20,26 @@ let usage = Printf.sprintf
 "Usage: %s [-m memory.mem] [-c CPS] [-disp-schedule] [-v] [-vb] [-s steps]"
   (Filename.basename Sys.argv.(0))
 
-let optlist = [
-  ("-m", Arg.String Memo.load_data,
-    "ROM/RAM initialization data");
-  ("-c", Arg.Set_int cps,
-    "Clicks per second");
-  ("-disp-schedule",Arg.Set disp,
-    "clear");
-  ("-dv",Arg.Set debug_verbose,
-  "Print output and tape");
-  ("-v",Arg.Set verbose,
-  "Print output");
-  ("-s",Arg.Set_int steps,
-  "Nb of steps");
-  ("-timeout",Arg.Set_float seconds,
-  "Duration of program in seconds");
-  ("-disp",Arg.Set screen,"Display the screen (only in slow mode)");
-]
+let optlist =
+  Arg.align
+  [
+    ("-m", Arg.String Memo.load_data,
+      " ROM/RAM initialization data");
+    ("-c", Arg.Set_int cps,
+      " Clicks per second");
+    ("-disp-schedule",Arg.Set disp,
+      " Clear");
+    ("-dv",Arg.Set debug_verbose,
+      " Print output and tape");
+    ("-v",Arg.Set verbose,
+      " Print output");
+    ("-s",Arg.Set_int steps,
+      " Nb of steps");
+    ("-timeout",Arg.Set_float seconds,
+      " Duration of program in seconds");
+    ("-disp",Arg.Set screen,
+      " Display the screen (only in slow mode)");
+  ]
 
 
 let new_circuit p =
