@@ -1,4 +1,7 @@
 netlist_sim2:
+	ocamlbuild -ocamlc 'ocamlc unix.cma graphics.cma' -use-menhir netlist_sim2.byte
+
+netlist_sim2_2:
 	ocamlbuild -ocamlc 'ocamlc -g unix.cma graphics.cma' -use-menhir netlist_sim2.byte
 
 netgraph:

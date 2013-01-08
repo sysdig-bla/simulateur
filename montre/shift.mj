@@ -1,0 +1,47 @@
+const s = 8
+
+muxn<n> (a,b:[n],c:[n]) = o:[n] where
+  if n=0 then
+    o=[]
+  else
+    o=mux(a,b[0],c[0]).muxn<n-1>(a,b[1..],c[1..])
+  end if
+end where
+
+split<n>(a:[n]) = (e:[(n+1)/2],o:[n/2]) where
+  if n=1 then
+    e=a;
+    o=[]
+  else
+    (o1,e1)=split<n-1>(a[..n-2]);
+    e=e1.a[n-1];
+    o=o1;
+  end if
+end where
+
+fuse<n>(e:[(n+1)/2],o:[n/2]) = a:[n] where
+  if n=0 then
+    a=[]
+  else
+    a=e[0].fuse<n-1>(o,e[1..])
+  end if
+end where
+
+(* shift a to the left by value specified on k bits,
+ * least significant bit at 0 *)
+sllv<n,k>(a:[n],v:[k]) = c:[n] where
+  if n*k=0 then
+    c=a
+  else
+    (e,o) = split<n>(a);
+    e1 = sllv<(n+1)/2,k-1>(e,v[1..]);
+    o1 = sllv<n/2,k-1>(o,v[1..]);
+    b = fuse<n>(e1,o1);
+    c = muxn<n>(v[0],0.b[..n-2],b);
+  end if
+end where
+
+main(a:[s]) = b:[s] where
+  v = 0.1.0;
+  b = sllv<s,3>(a,v);
+end where
