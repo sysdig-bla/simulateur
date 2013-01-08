@@ -1,7 +1,4 @@
-open Netlist_ast
-open Sim2
-open Netgraph
-open Scheduler
+open Netlist_ast open Sim2 open Netgraph open Scheduler
 
 let std = Format.std_formatter
 
@@ -27,6 +24,8 @@ let optlist =
       " ROM/RAM initialization data");
     ("-c", Arg.Set_int cps,
       " Clicks per second");
+    ("-b", Arg.Set s_by_s,
+      " Execute the program step by step");
     ("-disp-schedule",Arg.Set disp,
       " Clear");
     ("-dv",Arg.Set debug_verbose,
@@ -84,6 +83,13 @@ let gtod = Unix.gettimeofday
 
 let wait = Unix.select [] [] [] 
 
+let read_input tab =
+  for i = 0 to (Array.length tab - 1) do
+     Printf.printf "i[%d] : %!" i;
+     tab.(i) <- Scanf.bscanf Scanf.Scanning.stdin " %c"
+     (fun x -> x = '1')
+  done
+
 let sim c =
   let a = Array.make c.in_length false in
   let start = gtod () in
@@ -101,8 +107,19 @@ let sim c =
 	then exit 0
   done
 
-let sbs_sim c = failwith "Not done"
-
+let sbs_sim c =
+   let a = Array.make c.in_length false in
+   if !screen then
+	Display.open_display ();
+   for i = 0 to !steps do
+      read_input a;
+      let o = step c a in
+      if !screen then
+	Display.update o;
+      Format.printf "STEP %d - %a@."
+	i print_raw o
+   done
+ 	
 let real_time cps c =
   let a = Array.make c.in_length false in
   let cps = float_of_int cps in
