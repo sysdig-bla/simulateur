@@ -80,7 +80,11 @@ let new_circuit p =
 
 let gtod = Unix.gettimeofday
 
-let wait = Unix.select [] [] [] 
+let wait t =
+  try
+    ignore (Unix.select [] [] [] t)
+  with
+    | Unix.Unix_error _ -> ()
 
 let mk_format p =
   let rec mk cur = function
@@ -145,7 +149,7 @@ let real_time cps c =
       Format.printf "STEP %d - %a@."
       i print_raw o;
     let t = (float_of_int i)/.cps -. elapsed () in
-    if t>0.05 then ignore (wait t)
+    if t>0.05 then wait t
   done
 
 let main () =
