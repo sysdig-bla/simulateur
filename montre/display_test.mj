@@ -7,7 +7,7 @@ where
     d4 = mux (b[1], 1, n) ;
     d5 = mux (b[1], n, b[0]);
     d6 = mux(b[1], b[0], 1);
-    d7 = mux(b[1],n,b[0]);
+    d7 = mux(b[1],b[0],n);
     d8 = mux(b[1],1,b[0]);
 
     t1 = mux(b[2],d2,d1);
@@ -25,6 +25,6 @@ count () = o:[4] where
 end where
 
 main () =  o:[7] where
-    o = count(). 0 . 0. 0;
+    o = Dec7(count())
 end where
 
