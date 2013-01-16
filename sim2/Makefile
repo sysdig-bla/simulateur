@@ -14,7 +14,7 @@ schedule:
 	ocamlbuild scheduler.cmx
 
 test:
-	./netlist_sim2.byte ../montre/display_test.net -disp -v -c 1 -s 9
+	./netlist_sim2.byte ../montre/display_test.net -disp -v -c 10 -s 33
 
 clean:
 	ocamlbuild -clean
