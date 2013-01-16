@@ -44,11 +44,11 @@ let interpret l steps =
     let c = t.(!pc+2) in
     Printf.printf "%3d %3d %3d : " (relative a) (relative b) (relative c);
     (* if c = b, then the cell is overwritten at the next cycle *)
-    let b = (b-a+mem_size) mod mem_size in
-    t.(!pc+1) <- b;
-    if (a=b && a=c)
+    let diff = (t.(b)-t.(a)+mem_size) mod mem_size in
+    t.(b) <- diff;
+    if (a= !pc && b= !pc && c= !pc)
       then continue := false
-    else if b > max_int || b = 0
+    else if t.(b) > max_int || t.(b) = 0
       then pc := c
     else pc := !pc+3;
     if !pc > max_int-3

@@ -32,7 +32,7 @@ let read h =
         | N n -> stack := N n::!stack; incr index
         | L l -> stack := L l::!stack; incr index
         | Mark l -> Hashtbl.add tbl l !index
-        | Current -> stack := N !index::!stack; incr index
+        | Next -> incr index; stack := N !index::!stack
     done;
     []
   with

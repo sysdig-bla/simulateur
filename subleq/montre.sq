@@ -16,65 +16,57 @@ twentythree:23
 
 # do {
 start:
-tmp tmp L0
-L0:
+tmp tmp ;
 
 # incr seconds 
-mone -1 dummylabel
+mone -1 ;
 # zero = - seconds
--1 zero L1
-L1:
+-1 zero ;
 # tmp = - zero = seconds
-zero tmp L2
-L2:
+zero tmp ;
 # Reset zero
-zero zero L3
-L3:
+zero zero ;
 # if tmp <= 59, goto start
 fiftynine tmp start
+
 # reset tmp
-tmp tmp L4
-L4:
+tmp tmp ;
+# reset seconds
+-1 -1 ;
 
 # incr minutes
-mone -2 dummylabel
-# zero = - seconds
--2 zero L5
-L5:
-# tmp = - zero = seconds
-zero tmp L6
-L6:
+mone -2 ;
+# zero = - minutes
+-2 zero ;
+# tmp = - zero = minutes
+zero tmp ;
 # Reset zero
-zero zero L7
-L7:
+zero zero ;
 # if tmp <= 59, goto start
 fiftynine tmp start
-# reset tmp
-tmp tmp L8:
-L8
 
-# incr seconds 
-mone -3 dummylabel
-# zero = - seconds
--3 zero L9
-L9:
-# tmp = - zero = seconds
-zero tmp L10
-L10:
+# reset tmp
+tmp tmp ;
+# reset minutes
+-2 -2 ;
+
+# incr hours 
+mone -3 ;
+# zero = - hours
+-3 zero ;
+# tmp = - zero = hours
+zero tmp ;
 # Reset zero
-zero zero L11
-L11:
+zero zero ;
 # if tmp <= 23, goto start
 twentythree tmp start
+
 # reset tmp
-tmp tmp L4
-L4
+tmp tmp ;
+# reset hours
+-3 -3 ;
 
 
 
 # jump to start 
 zero zero start
-
-
-dummylabel:
-

@@ -14,7 +14,7 @@ rule token = parse
                   { Mark s }
   | (letter (letter|digit)* as s)
                   { L s }
-  | ';'           { Current }
+  | ';'           { Next }
   | '#'           { comment lexbuf }
   | '\n'          { Lexing.new_line lexbuf; token lexbuf }
   | space         { token lexbuf }

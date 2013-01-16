@@ -3,4 +3,4 @@ type token =
   | N of int
   | L of string
   | Mark of string
-  | Current
+  | Next
