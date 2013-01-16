@@ -1,0 +1,30 @@
+
+add3 (i:[4]) = o:[4]
+where
+    greater = (i[1] & (not i[0]) &  (i[2] + i[3])) + i[0];
+    n = not(i[3]);
+    d2 = mux(i[3],i[0],0);
+    d1 = (not(i[1] + i[3])) + (i[3] & i[2]);
+
+    a0 = mux(greater,n,i[3]);
+    a1 = mux(greater,d1,i[2]);
+    a2 = mux(greater,d2,i[1]);
+    a3 = greater;
+
+    o = a3.a2.a1.a0;
+end where
+
+main (i:[8]) = o:[8]
+where
+    b1 = add3(i[5].i[6].i[7].0);
+    b2 = add3(b1[1..3].i[4]);
+    b3 = add3(b2[1..3].i[3]);
+    b4 = add3(b3[1..3].i[2]);
+    b5 = add3(b4[1..3].i[1]);
+    b6 = add3(0.b1[0].b2[0].b3[0]);
+    b7 = add3(b6[1..3].b4[0]);
+    
+    o = b7[1..3].b5.i[0]
+(*    o = i[7].b5[3].b5[2].b5[1].b5[0].b7[3].b7[2].b7[1] *)
+end where
+
