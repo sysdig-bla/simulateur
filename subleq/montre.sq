@@ -25,16 +25,16 @@ mone -1 dummylabel
 -1 zero L1
 L1:
 # tmp = - zero = seconds
-zero tmp L2:
+zero tmp L2
 L2:
 # Reset zero
-zero zero L3:
+zero zero L3
 L3:
 # if tmp <= 59, goto start
 fiftynine tmp start
 # reset tmp
-tmp tmp L4:
-L4
+tmp tmp L4
+L4:
 
 # incr minutes
 mone -2 dummylabel
@@ -42,10 +42,10 @@ mone -2 dummylabel
 -2 zero L5
 L5:
 # tmp = - zero = seconds
-zero tmp L6:
+zero tmp L6
 L6:
 # Reset zero
-zero zero L7:
+zero zero L7
 L7:
 # if tmp <= 59, goto start
 fiftynine tmp start
@@ -59,15 +59,15 @@ mone -3 dummylabel
 -3 zero L9
 L9:
 # tmp = - zero = seconds
-zero tmp L10:
+zero tmp L10
 L10:
 # Reset zero
-zero zero L11:
+zero zero L11
 L11:
 # if tmp <= 23, goto start
 twentythree tmp start
 # reset tmp
-tmp tmp L4:
+tmp tmp L4
 L4
 
 
