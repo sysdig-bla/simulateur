@@ -1,0 +1,58 @@
+# Initialization
+
+0 0 start
+
+# Memory map
+
+# CONSTANTS
+# 0 : 0 (null register)
+zero:0
+mone:-1
+msixty:-60
+mtwentyfour:-24
+
+# Variables
+
+# do {
+start:
+
+# incr seconds 
+mone -1 dummylabel
+# zero = - seconds
+-1 zero L1
+L1:
+# if seconds < 60, goto start
+msixty zero start
+# restore zero
+zero zero L2
+
+L2:
+# incr minutes
+mone -2 dummylabel
+# zero = - minutes
+-2 zero L2
+L3:
+# if minutes < 60, goto start
+msixty zero start
+# restore zero
+zero zero L4
+
+L4:
+# incr hours
+mone -3 dummylabel
+# zero = - hours
+-3 zero L2
+L5:
+# if hours < 24, goto start
+mtwentyfour zero start
+# restore zero
+zero zero L6
+
+L6:
+
+# jump to start 
+zero zero start
+
+
+dummylabel:
+
