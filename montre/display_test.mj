@@ -1,0 +1,30 @@
+Dec7(b : [4]) = s : [7]
+where
+    n = not b[0];
+    d1 = mux (b[1], 0, n);
+    d2 = mux (b[1], n, 1);
+    d3 = mux (b[1], n, 0);
+    d4 = mux (b[1], 1, n) ;
+    d5 = mux (b[1], n, b[0]);
+    d6 = mux(b[1], b[0], 1);
+    d7 = mux(b[1],n,b[0]);
+    d8 = mux(b[1],1,b[0]);
+
+    t1 = mux(b[2],d2,d1);
+    t2 = mux(b[2],d2,b[1]);
+    t3 = mux(b[2],d5,d4);
+    t4 = mux(b[2],1,d6);
+    t5 = mux(b[2],d7,1);
+    t6 = mux(b[2],d8,d4);
+
+    s = mux(b[3],1,t1) . mux(b[3],1,t2) . mux(b[2],d3,n) . mux(b[3],1,t3) .mux(b[3],1,t4) . mux(b[3],1,t5) . mux(b[3],1,t6) ;
+end where;
+
+count () = o:[4] where
+    o = reg(not(o[0])) . reg(reg(not(o[1]))) . reg(reg(reg(reg(not(o[2]))))) . reg(reg(reg(reg(reg(reg(reg(reg(not(o[3])))))))))
+end where
+
+main () =  o:[7] where
+    o = count(). 0 . 0. 0;
+end where
+
