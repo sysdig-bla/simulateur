@@ -18,9 +18,9 @@
    if n = 0 then
      raise Parsing.Parse_error
    else if n = 1 then
-     VBit (bool_of_string s)
+     [|bool_of_string s|]
    else
-     VBitArray (bool_array_of_string s)
+     bool_array_of_string s
 %}
 
 %token <string> CONST
@@ -69,8 +69,8 @@ arg:
 
 var: x=NAME ty=ty_exp { (x, ty) }
 ty_exp:
-  | /*empty*/ { TBit }
-  | COLON n=int { TBitArray n }
+  | /*empty*/ { 1 }
+  | COLON n=int { n }
 
 int:
   | c=CONST { int_of_string c }
