@@ -1,0 +1,23 @@
+neqz<n>(a:[n]) = o where
+  if n=0
+    then o=0
+  else if n=1
+    then o=a
+  else
+    o=a[0]+neqz<n-1>(a[1..])
+  end if
+  end if
+end where
+
+eqz<n>(a:[n]) = o where
+  o = not neqz<n>(a)
+end where
+
+leqz<n>(a:[n]) = o where
+  if n = 0
+    then
+      o = 1
+    else
+      o = a[n-1] + eqz<n>(a)
+  end if
+end where
