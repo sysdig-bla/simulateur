@@ -1,0 +1,5 @@
+1 On lit A, PC ++
+2 On lit B, PC ++
+3 On lit a l'adresse A
+4 On lit a l'adresse B, calculer B-A, comparaison a 0
+5 On lit C, PC++, bleq
