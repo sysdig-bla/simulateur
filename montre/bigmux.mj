@@ -1,0 +1,18 @@
+muxn<n> (a,b:[n],c:[n]) = o:[n] where
+  if n = 0 then
+    o = []
+  else
+    o = mux(a,b[0],c[0]).muxn<n-1>(a,b[1..],c[1..])
+  end if
+end where
+
+(*
+  Pour write_addr:[n] il faut brancher au registre "B"
+  Pour data:[n] il faut brancher au registre "value of B"
+  Pour write_enable il faut brancher au registre "State 4"
+*)
+
+bigmux<n>(read_a,read_pc,pc:[n],a:[n],b:[n]) = (read_addr:[n]) where
+  c = muxn<n>(read_a,a,b);
+  read_addr = muxn<n>(read_pc,pc,);
+end where
