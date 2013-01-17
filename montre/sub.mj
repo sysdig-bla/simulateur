@@ -1,0 +1,28 @@
+adder<n>(a:[n], b:[n], c_in) = (o:[n], c_out) where
+  if n = 0
+  then
+    o = [];
+    c_out = c_in;
+  else
+    if n = 1
+    then
+      o = a ^ b ^ c_in;
+      c_out = (a & b) + ((a + b) & c_in);
+    else
+      (o1, c_out1) = adder<n-1>(a[..n-2], b[..n-2], c_in);
+      o2 = (a[n-1] ^ b[n-1]) ^ c_out1;
+      c_out = (a[n-1] & b[n-1]) + ((a[n-1] ^ b[n-1]) & c_out1);
+      o = o1 . o2;
+    end if
+  end if
+end where
+
+add<n>(a:[n], b:[n]) = o:[n] where
+  (o, c) = adder<n>(a, b, 0);
+end where
+
+sub<n>(a:[n], b:[n]) = o:[n] where
+  c = not b;
+  (o, k) = adder<n>(a, c, 1);
+end where
+
