@@ -35,3 +35,4 @@ pc(C:[s],leqz,step5,read) = pc:[s] where
   branch = muxn<s>(leqz&step5,C,pci);
   pc = regn<s>(branch)
 end where
+

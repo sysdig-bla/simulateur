@@ -21,3 +21,4 @@ leqz<n>(a:[n]) = o where
       o = a[n-1] + eqz<n>(a)
   end if
 end where
+

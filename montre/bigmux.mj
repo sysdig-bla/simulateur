@@ -16,3 +16,4 @@ bigmux<n>(read_a,read_pc,pc:[n],a:[n],b:[n]) = (read_addr:[n]) where
   c = muxn<n>(read_a,a,b);
   read_addr = muxn<n>(read_pc,pc,);
 end where
+
