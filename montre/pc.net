@@ -1,0 +1,47 @@
+INPUT C, leqz, step5, read
+OUTPUT pc
+VAR
+  C : 2, _l_21_118, _l_21_131, _l_21_79, _l_21_92, _l_22_117, _l_22_130, 
+  _l_22_78, _l_22_91, _l_23_116, _l_23_129, _l_23_77, _l_23_90, _l_24_115 : 1, 
+  _l_24_76 : 1, _l_25_114 : 1, _l_25_75 : 1, _l_26_113 : 1, _l_26_74 : 1, 
+  _l_28_155, _l_28_164, _l_29_154, _l_29_163, _l_30_153 : 1, _l_31_152 : 1, 
+  _l_34_49 : 1, _l_36_48, _l_37_47, _l_39_46, _l_43, branch : 2, c1_50, 
+  dummy, leqz, o1_51 : 1, pc : 2, pc1 : 2, pci : 2, read, step5
+IN
+pc = CONCAT _l_29_154 _l_31_152
+_l_28_155 = SELECT 0 branch
+_l_29_154 = REG _l_28_155
+_l_30_153 = SLICE 1 1 branch
+_l_31_152 = _l_29_163
+_l_28_164 = SELECT 0 _l_30_153
+_l_29_163 = REG _l_28_164
+branch = CONCAT _l_23_116 _l_26_113
+_l_21_118 = SELECT 0 C
+_l_22_117 = SELECT 0 pci
+_l_23_116 = MUX _l_43 _l_21_118 _l_22_117 
+_l_24_115 = SLICE 1 1 C
+_l_25_114 = SLICE 1 1 pci
+_l_26_113 = _l_23_129
+_l_21_131 = SELECT 0 _l_24_115
+_l_22_130 = SELECT 0 _l_25_114
+_l_23_129 = MUX _l_43 _l_21_131 _l_22_130 
+pci = CONCAT _l_23_77 _l_26_74
+_l_21_79 = SELECT 0 pc1
+_l_22_78 = SELECT 0 pc
+_l_23_77 = MUX read _l_21_79 _l_22_78 
+_l_24_76 = SLICE 1 1 pc1
+_l_25_75 = SLICE 1 1 pc
+_l_26_74 = _l_23_90
+_l_21_92 = SELECT 0 _l_24_76
+_l_22_91 = SELECT 0 _l_25_75
+_l_23_90 = MUX read _l_21_92 _l_22_91 
+dummy = AND c1_50 _l_39_46
+pc1 = CONCAT o1_51 _l_37_47
+c1_50 = _l_34_49
+o1_51 = NOT _l_34_49
+_l_34_49 = SLICE 0 0 pc
+_l_36_48 = SELECT 1 pc
+_l_37_47 = XOR _l_36_48 c1_50
+_l_39_46 = SELECT 1 pc
+_l_43 = AND leqz step5
+
