@@ -1,4 +1,4 @@
 main() = o
 where
-  state = scheduler(zero<5>());
+  state = scheduler();
 end where
