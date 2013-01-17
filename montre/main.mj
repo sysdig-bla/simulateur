@@ -1,4 +1,4 @@
-main() = o
+main() = state:[5]
 where
-  state = scheduler(zero(5));
+  state = scheduler();
 end where
