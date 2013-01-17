@@ -1,0 +1,8 @@
+zero<n>() = o:[n]
+where
+  if n = 0
+  then []
+  else o = 0.zero<n-1>()
+  end if
+end where
+
