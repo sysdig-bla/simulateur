@@ -1,0 +1,27 @@
+const s = 8
+
+muxn<n> (a,b:[n],c:[n]) = o:[n] where
+  if n = 0 then
+    o = []
+  else
+    o = mux(a,b[0],c[0]).muxn<n-1>(a,b[1..],c[1..])
+  end if
+end where
+
+regn<n>(i:[n]) = o:[n] where
+  if n = 0
+  then
+    o = []
+  else
+    o = reg(i[0]).regn<n-1>(i[1..])
+  end if
+end where
+
+write<n>(write_enable,i:[n]) = o:[n] where
+  a = muxn<n>(write_enable,i[0..n-1],o[0..n-1]);
+  o = regn<n>(a)
+end where
+
+main(e,i:[s]) = o:[s] where
+  o = write<s>(e,i[0..s-1]);
+end where
