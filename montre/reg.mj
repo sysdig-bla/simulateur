@@ -20,7 +20,3 @@ write<n>(write_enable,i:[n]) = o:[n] where
   o = regn<n>(a)
 end where
 
-main(e,i:[s]) = o:[s] where
-  o = write<s>(e,i[0..s-1]);
-end where
-
