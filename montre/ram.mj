@@ -1,13 +1,4 @@
-n_zeros<n>() : o[n]
-where
-	if n = 0 then
-		o = []
-	else
-		o = 0.n_zeros<n-1>()
-	end if
-end where
-
-regn<n>(enable,i:[n]) : o[n]
+regn<n>(enable,i:[n]) = o:[n]
 where
 	if n = 0 then
 		o = []
@@ -16,11 +7,11 @@ where
 	end if
 end where
 
-ram_module<n>(wa:[n], ra:[n], wen, data:[n]) : o:[n]
+ram_module<n>(wa:[n], ra:[n], wen, data:[n]) = o:[n]
 where
 	write_enable = mux(wa[n-1],0,wen);
-	real_ra = mux(ra[n-1],n_zeros<n>(),ra);
-	mem = ram<1024*n,n>(real_ra, write_enable, write_address,data);
+	real_ra = mux(ra[n-1],zero<n>(),ra);
+	mem = ram<1024*n,n>(real_ra, write_enable,wa,data);
 	
 	
 
