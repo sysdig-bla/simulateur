@@ -6,15 +6,11 @@ let end_cells = 5 (* to be printed *)
 
 exception Eof
 
-let print_cells () =
+let print_cells h =
   for i = end_cells downto 1 do
-    Printf.printf "%3d " t.(mem_size-i)
+    Printf.fprintf h "%3d " t.(mem_size-i)
   done;
-(*  Printf.printf "\n";
-  for i = 0 to 30 do
-    Printf.printf " %3d" t.(i)
-  done;*)
-  Printf.printf "\n%!"
+  Printf.fprintf h "\n%!"
 
 let normalize n = ((n mod mem_size)+mem_size) mod mem_size
 
@@ -22,27 +18,27 @@ let normalize n = ((n mod mem_size)+mem_size) mod mem_size
 
 let init l =
   let rec init i = function
-    | h::tl -> t.(i) <- normalize h; Printf.printf "%d %!" t.(i);init (i+1) tl
+    | h::tl -> t.(i) <- normalize h; init (i+1) tl
     | [] -> ()
   in init 0 l
 
 let relative x =
   if x > max_int then x-mem_size else x
 
-let interpret l steps =
+let interpret h l steps =
   init l;
   let pc = ref 0 in
   let s = ref 0 in
   let continue = ref true in
-  Printf.printf "  0 : ";
-  print_cells ();
+  Printf.fprintf h "  0 : ";
+  print_cells h;
   while !continue && !s < steps do
     incr s;
-    Printf.printf "%3d - pc=%3d - " !s !pc;
+    Printf.fprintf h "%3d - pc=%3d - " !s !pc;
     let a = t.(!pc) in
     let b = t.(!pc+1) in
     let c = t.(!pc+2) in
-    Printf.printf "%3d %3d %3d : " (relative a) (relative b) (relative c);
+    Printf.fprintf h "%3d %3d %3d : " (relative a) (relative b) (relative c);
     (* if c = b, then the cell is overwritten at the next cycle *)
     let diff = (t.(b)-t.(a)+mem_size) mod mem_size in
     t.(b) <- diff;
@@ -53,6 +49,6 @@ let interpret l steps =
     else pc := !pc+3;
     if !pc > max_int-3
       then continue := false;
-    print_cells ();
+    print_cells h;
   done;
-  Printf.printf "## END OF SIMULATION ##\n"
+  Printf.fprintf h "## END OF SIMULATION ##\n"

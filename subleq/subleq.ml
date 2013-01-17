@@ -1,5 +1,6 @@
 open Token
 open Lexing
+open Constants
 
 exception Eof
 
@@ -39,7 +40,41 @@ let read h =
       | Eof -> rev_map_token !stack
 
 let rec print h = function
-  | h1::h2::h3::t -> Printf.fprintf h "%3d %3d %3d\n" h1 h2 h3; print h t
-  | [h1;h2] -> Printf.fprintf h "%3d %3d\n" h1 h2
+  | h0::h1::h2::t -> Printf.fprintf h "%3d %3d %3d\n" h0 h1 h2; print h t
+  | [h0;h1] -> Printf.fprintf h "%3d %3d\n" h0 h1
   | [h_] -> Printf.fprintf h "%3d\n" h_
   | [] -> ()
+
+let split l =
+  let rec split a0 a1 a2 = function
+    | h0::h1::h2::t -> split (h0::a0) (h1::a1) (h2::a2) t
+    | [h0;h1] -> h0::a0,h1::a1,a2
+    | [h] -> h::a0,a1,a2
+    | [] -> a0,a1,a2
+  in
+  let a0,a1,a2 = split [] [] [] l in
+  List.rev a0,List.rev a1,List.rev a2
+
+let print_bin h a =
+  let a = ref a in
+  for i = 1 to size do
+    Printf.fprintf h "%d" (!a land 1);
+    a := !a lsr 1;
+  done
+
+let rec print_binpart h = function
+  | hd::t ->
+      print_bin h hd;
+      Printf.fprintf h "\n";
+      print_binpart h t
+  | [] -> ()
+
+let print_binary h l a b c =
+  let la,lb,lc = split l in
+  Printf.fprintf h "3\n";
+  Printf.fprintf h "%s %d %d\n" a size (List.length la);
+  print_binpart h la;
+  Printf.fprintf h "%s %d %d\n" b size (List.length lb);
+  print_binpart h lb;
+  Printf.fprintf h "%s %d %d\n" c size (List.length lc);
+  print_binpart h lc
