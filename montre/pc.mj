@@ -1,0 +1,39 @@
+const s = 2
+
+muxn<n>(a,b:[n],c:[n]) = o:[n] where
+  if n = 0
+    then o = []
+    else o = mux(a,b[0],c[0]).muxn<n-1>(a,b[1..],c[1..])
+  end if
+end where
+
+regn<n>(a:[n]) = b:[n] where
+  if n = 0
+    then b = []
+    else b = reg(a[0]).regn<n-1>(a[1..])
+  end if
+end where
+
+incr1<n>(x:[n]) = (o:[n],c) where
+  if n = 0
+    then
+      o=[];
+      c=1
+  else if n = 1
+    then
+      o=not x;
+      c=x
+  else
+    (o1,c1) = incr1<n-1>(x[..n-2]);
+    o = o1.(x[n-1]^c1);
+    c = c1 & x[n-1]
+  end if
+  end if
+end where
+
+pc(C:[s],leqz,step5,read) = pc:[s] where
+  (pc1,dummy) = incr1<s>(pc);
+  pci = muxn<s>(read,pc1,pc);
+  branch = muxn<s>(leqz&step5,C,pci);
+  pc = regn<s>(branch)
+end where
