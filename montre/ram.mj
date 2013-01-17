@@ -27,4 +27,3 @@ where
 	out = mux(ra[n-1],cur_out,mem);
 end where
 
-
