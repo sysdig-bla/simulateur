@@ -1,4 +1,5 @@
-adder<n>(a:[n], b:[n], c_in) = (o:[n], c_out) where
+adder<n>(a:[n],b:[n],c_in) = (o:[n],c_out)
+where
   if n = 0
   then
     o = [];
@@ -17,12 +18,22 @@ adder<n>(a:[n], b:[n], c_in) = (o:[n], c_out) where
   end if
 end where
 
-add<n>(a:[n], b:[n]) = o:[n] where
-  (o, c) = adder<n>(a, b, 0);
+add<n>(a:[n],b:[n]) = o:[n]
+where
+  (o,c) = adder<n>(a,b,0);
 end where
 
-sub<n>(a:[n], b:[n]) = o:[n] where
-  c = not b;
-  (o, k) = adder<n>(a, c, 1);
+notn<n>(a:[n]) = o:[n]
+where
+	if n = 0
+	then o = []
+	else o = (not a[0]).notn<n-1>(a[1..])
+	end if
+end where
+
+sub<n>(a:[n],b:[n]) = o:[n]
+where
+  c = notn<n>(b);
+  (o,k) = adder<n>(a,c,1);
 end where
 

@@ -6,7 +6,7 @@ multimux<as,ws>(a:[as],in:[2^as*ws]) = o:[ws] where
     else
       o = muxn<ws>( a[as-1],
             multimux<as-1,ws>(a[..as-2],in[2^(as-1)*ws..]),
-            multimux<as-1,ws>(a[..as-2],in[..2^(as-1)*ws-1))
+            multimux<as-1,ws>(a[..as-2],in[..2^(as-1)*ws-1]))
   end if
   end if
 end where
@@ -38,7 +38,7 @@ where
     then
       o = []
   else
-    o = ereg<ws>(we[0],data).multiereg<n-1,ws>(we[1..],data);
+    o = eregn<ws>(we[0],data).multiereg<n-1,ws>(we[1..],data);
   end if
 end where
 
