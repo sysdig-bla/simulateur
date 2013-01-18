@@ -41,42 +41,48 @@ let optlist =
   ]
 
 let new_circuit p =
-  if !disp
-    then begin
-      let g = mk_graph p in
-      let nb_nodes = !free in
-      if nb_nodes < 20 then
-        Format.printf "Original graph@\n    @[%a@]@\n"
-          print_graph g;
-      let sch,ma,out_order,n,in_length = batch g in
-      let t=Array.make_matrix 2 n false in
-      t.(0).(n-1) <- true;
-      t.(1).(n-1) <- true;
-      let ol = Array.length out_order in
-      let o_loc,o_sz = get_output_loc g in
-      Format.printf "Schedule@\n    @[%a@]@\n"
-        print_sch sch;
-      Format.printf "Output nodes@\n    @[%a@]@\n"
-        print_outnodes (out_order,o_loc,o_sz,p.p_outputs);
-      Format.printf "Initially %d eqs, %d nodes@\n"
-        (List.length p.p_eqs) nb_nodes;
-      Format.printf "Nodes - %d | Input - %d@\n" n in_length;
-      {
-        tape = {
-          t=t ;
-          output=Array.make ol false;
-          outcells=out_order;
-          time=0;
-          sch=sch;
-          ma=ma
-        };
-        in_length = in_length;
-        out_length = ol;
-        whereis = (fun s -> Smap.find s o_loc);
-        size = (fun s -> Smap.find s o_sz);
-      }
-    end
-  else new_circuit p
+  try
+    if !disp
+      then begin
+        let g = mk_graph p in
+        let nb_nodes = !free in
+        if nb_nodes < 20 then
+          Format.printf "Original graph@\n    @[%a@]@\n"
+            print_graph g;
+        let sch,ma,out_order,n,in_length = batch g in
+        let t=Array.make_matrix 2 n false in
+        t.(0).(n-1) <- true;
+        t.(1).(n-1) <- true;
+        let ol = Array.length out_order in
+        let o_loc,o_sz = get_output_loc g in
+        Format.printf "Schedule@\n    @[%a@]@\n"
+          print_sch sch;
+        Format.printf "Output nodes@\n    @[%a@]@\n"
+          print_outnodes (out_order,o_loc,o_sz,p.p_outputs);
+        Format.printf "Initially %d eqs, %d nodes@\n"
+          (List.length p.p_eqs) nb_nodes;
+        Format.printf "Nodes - %d | Input - %d@\n" n in_length;
+        {
+          tape = {
+            t=t ;
+            output=Array.make ol false;
+            outcells=out_order;
+            time=0;
+            sch=sch;
+            ma=ma
+          };
+          in_length = in_length;
+          out_length = ol;
+          whereis = (fun s -> Smap.find s o_loc);
+          size = (fun s -> Smap.find s o_sz);
+        }
+      end
+    else new_circuit p
+  with
+    | Cyclic l ->
+        Printf.eprintf "Cycle :\n";
+        List.iter (fun s -> Printf.eprintf "%s\n" s) l;
+        exit 2
 
 let gtod = Unix.gettimeofday
 

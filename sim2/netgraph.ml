@@ -43,7 +43,7 @@ type graph = {
   out_order:ident array;
 }
 
-exception Cyclic of string
+exception Cyclic of string list
 
 exception Incomplete
 
@@ -150,119 +150,121 @@ let mk_graph p =
     | Aconst b -> make_const b
   in
   let rec add_node id =
-    let n = find id in
-    if n.(0).mark = -1
-    then raise (Cyclic id)
-    else if n.(0).mark=1
-    then n
-    else (* marked 0 *) (
-      n.(0).mark <- -1;
-      begin match Smap.find id eqset with
-        | Earg a ->
-          let a = get_arg a in
-          if sz a <> sz n then wrong_size id;
-          Array.iteri
-            (fun i n -> n.eq <- Node a.(i); n.d <- a.(i).d+1) n
+    try
+      let n = find id in
+      if n.(0).mark = -1
+      then raise (Cyclic [id])
+      else if n.(0).mark=1
+      then n
+      else (* marked 0 *) (
+        n.(0).mark <- -1;
+        begin match Smap.find id eqset with
+          | Earg a ->
+            let a = get_arg a in
+            if sz a <> sz n then wrong_size id;
+            Array.iteri
+              (fun i n -> n.eq <- Node a.(i); n.d <- a.(i).d+1) n
 
-        | Ereg a ->
-          queue := a:: !queue;
-          let a = find a in
-          if sz a <> sz n then wrong_size id;
-          Array.iteri
-          (fun i n -> n.eq <- Reg a.(i); n.d <- 0) n
+          | Ereg a ->
+            queue := a:: !queue;
+            let a = find a in
+            if sz a <> sz n then wrong_size id;
+            Array.iteri
+            (fun i n -> n.eq <- Reg a.(i); n.d <- 0) n
 
-        | Enot a ->
-          let a = get_arg a in
-          if sz a <> sz n then wrong_size id;
-          Array.iteri
-            (fun i n -> n.eq <- Not a.(i); n.d<-a.(i).d+1) n
+          | Enot a ->
+            let a = get_arg a in
+            if sz a <> sz n then wrong_size id;
+            Array.iteri
+              (fun i n -> n.eq <- Not a.(i); n.d<-a.(i).d+1) n
 
-        | Ebinop (o,a,b) ->
-          let a = get_arg a in
-          let b = get_arg b in
-          if sz a <> sz n || sz b <> sz n then wrong_size id;
-          Array.iteri
-            (fun i n ->
-              n.eq <- Bin(o,a.(i),b.(i)); n.d<-max a.(i).d b.(i).d+1) n
+          | Ebinop (o,a,b) ->
+            let a = get_arg a in
+            let b = get_arg b in
+            if sz a <> sz n || sz b <> sz n then wrong_size id;
+            Array.iteri
+              (fun i n ->
+                n.eq <- Bin(o,a.(i),b.(i)); n.d<-max a.(i).d b.(i).d+1) n
 
-        | Emux (a,b,c) ->
-          let k = get_arg a in
-          let b = get_arg b in
-          let c = get_arg c in
-          if sz b <> sz n || sz c <> sz n then wrong_size id;
-          if sz k <> 1 then ntlserr (id^" mux has bad select line");
-          Array.iteri
-            (fun i n ->
-              n.eq <- Mux(k.(0),b.(i),c.(i));
-              n.d<-max (max k.(0).d b.(i).d) c.(i).d +1) n
+          | Emux (a,b,c) ->
+            let k = get_arg a in
+            let b = get_arg b in
+            let c = get_arg c in
+            if sz b <> sz n || sz c <> sz n then wrong_size id;
+            if sz k <> 1 then ntlserr (id^" mux has bad select line");
+            Array.iteri
+              (fun i n ->
+                n.eq <- Mux(k.(0),b.(i),c.(i));
+                n.d<-max (max k.(0).d b.(i).d) c.(i).d +1) n
 
-        (* We need to fill the memory that early because we won't have
-         * easy access to variable names very soon *)
-        | Erom (addrs,ws,a) ->
-          let ra = find_arg a in
-          if sz ra <> addrs then ntlserr (id^" rom has bad address size");
-          if sz n <> ws then wrong_size id;
-          let ra = new_addr ra in
-          addr := ra::!addr;
-          let m = Memo.get id ws (1 lsl addrs) in
-          Array.iteri
-            (fun i n -> n.eq <- Rom (ra,m.(i)); n.d<-0) n
+          (* We need to fill the memory that early because we won't have
+          * easy access to variable names very soon *)
+          | Erom (addrs,ws,a) ->
+            let ra = find_arg a in
+            if sz ra <> addrs then ntlserr (id^" rom has bad address size");
+            if sz n <> ws then wrong_size id;
+            let ra = new_addr ra in
+            addr := ra::!addr;
+            let m = Memo.get id ws (1 lsl addrs) in
+            Array.iteri
+              (fun i n -> n.eq <- Rom (ra,m.(i)); n.d<-0) n
 
-        | Eram (addrs,ws,ra_,we_,wa_,dat_) ->
-          let ra = find_arg ra_ in
-          let we = find_arg we_ in
-          let wa = find_arg wa_ in
-          let dat = find_arg dat_ in
-          if sz ra <> addrs then ntlserr (id^" ram has bad address size");
-          if sz we <> 1 then ntlserr (id^" ram has bad write enable size");
-          if sz wa <> addrs then ntlserr (id^" ram has bad address size");
-          if sz dat <> ws then ntlserr (id^" ram has bad data size");
-          if sz n <> ws then wrong_size id;
-          let ra = new_addr ra in
-          let wa = new_addr wa in
-          addr := wa::ra::!addr;
-          let m = Memo.get id ws (1 lsl addrs) in
-          Array.iteri
-            (fun i n ->
-              n.eq <- Ram (ra,we.(0),wa,dat.(i),m.(i));
-              n.d<-0) n
+          | Eram (addrs,ws,ra_,we_,wa_,dat_) ->
+            let ra = find_arg ra_ in
+            let we = find_arg we_ in
+            let wa = find_arg wa_ in
+            let dat = find_arg dat_ in
+            if sz ra <> addrs then ntlserr (id^" ram has bad address size");
+            if sz we <> 1 then ntlserr (id^" ram has bad write enable size");
+            if sz wa <> addrs then ntlserr (id^" ram has bad address size");
+            if sz dat <> ws then ntlserr (id^" ram has bad data size");
+            if sz n <> ws then wrong_size id;
+            let ra = new_addr ra in
+            let wa = new_addr wa in
+            addr := wa::ra::!addr;
+            let m = Memo.get id ws (1 lsl addrs) in
+            Array.iteri
+              (fun i n ->
+                n.eq <- Ram (ra,we.(0),wa,dat.(i),m.(i));
+                n.d<-0) n
 
-        (* Representing only single lines enables us to first discard
-         * this information at the cost of time and space
-         * for the topoligical sort.
-         * Doing this later is more complicated but we save resources
-         * while sorting.
-         * Given the size of the circuit to be simulated,
-         * overhead is negligible *)
-        | Econcat (a,b) ->
-          let a = get_arg a in
-          let b = get_arg b in
-          let d = max a.(0).d b.(0).d +1 in
-          if sz a + sz b <> sz n then wrong_size id;
-          for i = 0 to sz a-1 do
+          (* Representing only single lines enables us to first discard
+          * this information at the cost of time and space
+          * for the topoligical sort.
+          * Doing this later is more complicated but we save resources
+          * while sorting.
+          * Given the size of the circuit to be simulated,
+          * overhead is negligible *)
+          | Econcat (a,b) ->
+            let a = get_arg a in
+            let b = get_arg b in
+            let d = max a.(0).d b.(0).d +1 in
+            if sz a + sz b <> sz n then wrong_size id;
+            for i = 0 to sz a-1 do
             n.(i).eq <- Node a.(i);
             n.(i).d <- d;
-          done;
-          for i = 0 to sz b-1 do
-            n.(sz a+i).eq <- Node b.(i);
-            n.(sz a+i).d <-d;
-          done
+            done;
+            for i = 0 to sz b-1 do
+              n.(sz a+i).eq <- Node b.(i);
+              n.(sz a+i).d <-d;
+            done
 
-        | Eslice (i,j,a) ->
-          let a = get_arg a in
-          if i<0 || i>=sz a || j<i || j>=sz a
-            then invalid_arg "Illegal slice";
-          if sz n <> j-i+1 then wrong_size id;
-          Array.iteri (fun k n -> n.eq <- Node a.(i+k);n.d<-a.(0).d+1) n
+          | Eslice (i,j,a) ->
+            let a = get_arg a in
+            if i<0 || i>=sz a || j<i || j>=sz a
+              then invalid_arg "Illegal slice";
+            if sz n <> j-i+1 then wrong_size id;
+            Array.iteri (fun k n -> n.eq <- Node a.(i+k);n.d<-a.(0).d+1) n
 
-        | Eselect (i,a) ->
-          let a = get_arg a in
-          if i<0 || i>= sz a then invalid_arg "Illegal select";
-          if sz n <> 1 then wrong_size id;
-          n.(0).eq <- Node a.(i);
-          n.(0).d <- a.(i).d+1
+          | Eselect (i,a) ->
+            let a = get_arg a in
+            if i<0 || i>= sz a then invalid_arg "Illegal select";
+            if sz n <> 1 then wrong_size id;
+            n.(0).eq <- Node a.(i);
+            n.(0).d <- a.(i).d+1
 
-      end; n.(0).mark <- 1; n)
+        end; n.(0).mark <- 1; n)
+      with Cyclic l -> raise (Cyclic (id::l))
   and get_arg = function
     | Avar id -> add_node id
     | Aconst b -> make_const b
