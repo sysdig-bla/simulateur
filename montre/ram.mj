@@ -59,6 +59,6 @@ where
   o = muxn<n>(vra,vo,mem);
 end where
 
-rrr(wa:[s],ra:[s],we,d:[s]) = (o:[s],out:[2^v*n]) where
+rrr(wa:[s],ra:[s],we,d:[s]) = (o:[s],out:[2^v*s]) where
   (o,out) = ram_module<s>(wa,ra,we,d)
 end where
