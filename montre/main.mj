@@ -1,6 +1,6 @@
 main() = o:[7*s+5+1]
 where
-	o = step.reg_a.reg_b.c.pc.read_addr_aux.read_addr.read_ram.leqz;
+  o = step.reg_a.reg_b.c.pc.read_addr_aux.read_addr.read_ram.leqz;
   step = scheduler();
   write_ram = step[4];
   write_a_or_va = step[0] + step[2];
