@@ -1,10 +1,19 @@
-main() = o:[s]
+main() = read_ram:[s]
 where
   state = scheduler();
-  write_addr = zero<s>();
-  read_addr = zero<s>();
-  write_enable = 0;
+  write_ram = 0;
+  write_a = 0;
+  write_b = 0;
   write_vb = 0;
-  reg_vb = write<n>(write_vb,o);
-  o = ram_module<s>(write_addr,read_addr,write_enable,reg_vb);
+  read_addr_a = 0;
+  read_addr_b = 0;
+  reg_a = write<s>(write_a,read_ram);
+  reg_b = write<s>(write_b,read_ram);
+  reg_vb = write<s>(write_vb,read_ram);
+  write_addr = reg_b;
+  pc = zero<s>();
+  read_addr_aux = muxn<s>(read_addr_a,reg_a,pc);
+  read_addr = muxn<s>(read_addr_b,reg_b,read_addr_aux);
+  data = reg_vb;
+  read_ram = ram_module<s>(write_addr,read_addr,write_ram,data);
 end where 

@@ -1,0 +1,237 @@
+const s = 16
+
+zero<n>() = o:[n]
+where
+  if n = 0
+  then o = []
+  else o = 0.zero<n-1>()
+  end if
+end where
+
+adder<n>(a:[n], b:[n], c_in) = (o:[n], c_out) where
+  if n = 0
+  then
+    o = [];
+    c_out = c_in;
+  else
+    if n = 1
+    then
+      o = a ^ b ^ c_in;
+      c_out = (a & b) + ((a + b) & c_in);
+    else
+      (o1, c_out1) = adder<n-1>(a[..n-2], b[..n-2], c_in);
+      o2 = (a[n-1] ^ b[n-1]) ^ c_out1;
+      c_out = (a[n-1] & b[n-1]) + ((a[n-1] ^ b[n-1]) & c_out1);
+      o = o1 . o2;
+    end if
+  end if
+end where
+
+add<n>(a:[n], b:[n]) = o:[n] where
+  (o, c) = adder<n>(a, b, 0);
+end where
+
+sub<n>(a:[n], b:[n]) = o:[n] where
+  c = not b;
+  (o, k) = adder<n>(a, c, 1);
+end where
+
+scheduler () = o:[5] where
+	a0 = not(reg(not(o[4])));
+	a1 = reg(o[0]);
+	a2 = reg(o[1]);
+	a3 = reg(o[2]);
+	a4 = reg(o[3]);
+	o = a0.a1.a2.a3.a4;
+end where
+
+muxn<n> (a,b:[n],c:[n]) = o:[n] where
+  if n = 0 then
+    o = []
+  else
+    o = mux(a,b[0],c[0]).muxn<n-1>(a,b[1..],c[1..])
+  end if
+end where
+
+regn<n>(i:[n]) = o:[n] where
+  if n = 0
+  then
+    o = []
+  else
+    o = reg(i[0]).regn<n-1>(i[1..])
+  end if
+end where
+
+write<n>(write_enable,i:[n]) = o:[n] where
+  a = muxn<n>(write_enable,i[0..n-1],o[0..n-1]);
+  o = regn<n>(a)
+end where
+
+add3 (i:[4]) = o:[4]
+where
+    greater = (i[1] & (not i[0]) &  (i[2] + i[3])) + i[0];
+    n = not(i[3]);
+    d2 = mux(i[3],i[0],0);
+    d1 = (not(i[1] + i[3])) + (i[3] & i[2]);
+
+    a0 = mux(greater,n,i[3]);
+    a1 = mux(greater,d1,i[2]);
+    a2 = mux(greater,d2,i[1]);
+    a3 = greater;
+
+    o = a3.a2.a1.a0;
+end where
+
+bcd (i:[8]) = o:[8]
+where
+    b1 = add3(i[5].i[6].i[7].0);
+    b2 = add3(b1[1..3].i[4]);
+    b3 = add3(b2[1..3].i[3]);
+    b4 = add3(b3[1..3].i[2]);
+    b5 = add3(b4[1..3].i[1]);
+    b6 = add3(0.b1[0].b2[0].b3[0]);
+    b7 = add3(b6[1..3].b4[0]);
+    
+    o = b7[1..3].b5.i[0]
+(*    o = i[7].b5[3].b5[2].b5[1].b5[0].b7[3].b7[2].b7[1] *)
+end where
+
+Dec7(b : [4]) = s : [7]
+where
+    n = not b[0];
+    d1 = mux (b[1], 0, n);
+    d2 = mux (b[1], n, 1);
+    d3 = mux (b[1], n, 0);
+    d4 = mux (b[1], 1, n) ;
+    d5 = mux (b[1], n, b[0]);
+    d6 = mux(b[1], b[0], 1);
+    d7 = mux(b[1],b[0],n);
+    d8 = mux(b[1],1,b[0]);
+
+    t1 = mux(b[2],d2,d1);
+    t2 = mux(b[2],d2,b[1]);
+    t3 = mux(b[2],d5,d4);
+    t4 = mux(b[2],1,d6);
+    t5 = mux(b[2],d7,1);
+    t6 = mux(b[2],d8,d4);
+
+    s = mux(b[3],1,t1) . mux(b[3],1,t2) . mux(b[2],d3,n) . mux(b[3],1,t3) .mux(b[3],1,t4) . mux(b[3],1,t5) . mux(b[3],1,t6) ;
+end where;
+
+neqz<n>(a:[n]) = o where
+  if n=0
+    then o=0
+  else if n=1
+    then o=a
+  else
+    o=a[0]+neqz<n-1>(a[1..])
+  end if
+  end if
+end where
+
+eqz<n>(a:[n]) = o where
+  o = not neqz<n>(a)
+end where
+
+leqz<n>(a:[n]) = o where
+  if n = 0
+    then
+      o = 1
+    else
+      o = a[n-1] + eqz<n>(a)
+  end if
+end where
+
+muxn<n> (a,b:[n],c:[n]) = o:[n] where
+  if n = 0 then
+    o = []
+  else
+    o = mux(a,b[0],c[0]).muxn<n-1>(a,b[1..],c[1..])
+  end if
+end where
+
+(*
+  Pour write_addr:[n] il faut brancher au registre "B"
+  Pour data:[n] il faut brancher au registre "value of B"
+  Pour write_enable il faut brancher au registre "State 4"
+*)
+
+bigmux<n>(read_a,read_pc,pc:[n],a:[n],b:[n]) = (read_addr:[n]) where
+  c = muxn<n>(read_a,a,b);
+  read_addr = muxn<n>(read_pc,pc,c);
+end where
+
+muxn<n>(a,b:[n],c:[n]) = o:[n] where
+  if n = 0
+    then o = []
+    else o = mux(a,b[0],c[0]).muxn<n-1>(a,b[1..],c[1..])
+  end if
+end where
+
+regn<n>(a:[n]) = b:[n] where
+  if n = 0
+    then b = []
+    else b = reg(a[0]).regn<n-1>(a[1..])
+  end if
+end where
+
+incr1<n>(x:[n]) = (o:[n],c) where
+  if n = 0
+    then
+      o=[];
+      c=1
+  else if n = 1
+    then
+      o=not x;
+      c=x
+  else
+    (o1,c1) = incr1<n-1>(x[..n-2]);
+    o = o1.(x[n-1]^c1);
+    c = c1 & x[n-1]
+  end if
+  end if
+end where
+
+pc(C:[s],leqz,step5,read) = pc:[s] where
+  (pc1,dummy) = incr1<s>(pc);
+  pci = muxn<s>(read,pc1,pc);
+  branch = muxn<s>(leqz&step5,C,pci);
+  pc = regn<s>(branch)
+end where
+
+regn<n>(enable,i:[n]) = o:[n]
+where
+	if n = 0 then
+		o = []
+	else
+		o = reg(mux(enable,i[0],o[0])).regn<n-1>(enable,i[1..n-1]);
+	end if
+end where
+
+ram_module<n>(write_addr:[n], read_addr:[n], wen, data:[n]) = o:[n]
+where
+	write_enable = mux(write_addr[n-1],0,wen);
+	real_read_addr = muxn<n>(read_addr[n-1],zero<n>(),read_addr);
+	mem = ram<n,n>(real_read_addr,write_enable,write_addr,data);
+	o = muxn<n>(read_addr[n-1],zero<n>(),mem);
+end where
+
+main() = read_ram:[s]
+where
+  state = scheduler();
+  write_ram = 0;
+  write_a = 0;
+  write_b = 0;
+  write_vb = 0;
+  read_addr_a = 0;
+  read_addr_b = 0;
+  reg_a = write<s>(write_a,read_ram);
+  reg_b = write<s>(write_b,read_ram);
+  reg_vb = write<s>(write_vb,read_ram);
+  write_addr = reg_b;
+  pc = zero<s>();
+  read_addr_aux = muxn<s>(read_addr_a,reg_a,pc);
+  read_addr = muxn<s>(read_addr_b,reg_b,read_addr_aux);
+  data = reg_vb;
+  read_ram = ram_module<s>(write_addr,read_addr,write_ram,data);
+end where 
