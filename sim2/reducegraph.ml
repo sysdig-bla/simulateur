@@ -177,6 +177,8 @@ and reduce1 n =
 
 let reduce1 g =
   set_marks g 0;
+  ignore (List.map reduce1 !all_nodes);
+  (* For some reason it does not reduce nodes otherwise *)
   List.iter (fun a -> Array.iteri (fun i n -> a.(i) <- reduce1 a.(i)) a)
     g.range;
   List.iter
