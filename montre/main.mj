@@ -5,6 +5,6 @@ where
   read_addr = zero<s>();
   write_enable = 0;
   write_vb = 0;
-  reg_vb = write<n>(write_vb,o);
+  reg_vb = write<s>(write_vb,o);
   o = ram_module<s>(write_addr,read_addr,write_enable,reg_vb);
 end where 
