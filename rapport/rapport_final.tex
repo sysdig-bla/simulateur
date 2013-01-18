@@ -1,0 +1,113 @@
+\documentclass[a4paper]{article}
+
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{fullpage}
+\usepackage{pgf}
+\usepackage{tikz}
+\usetikzlibrary{arrows,automata}
+\usetikzlibrary{positioning}
+
+\tikzstyle{operateur} =
+[style={circle,fill=gray!20,draw,font=\sffamily\LARGE\bfseries}]
+\tikzstyle{not} = [draw,style={circle,fill=gray!20},minimum size=0.0cm]
+\tikzstyle{reg} = [style={fill=gray!20,draw,thick,minimum size=0.8cm}]
+\tikzstyle{boite} = [minimum height=2cm, minimum width=2cm,rectangle,
+					style={fill=gray!20,draw,thick}]
+\tikzstyle{mux} = [minimum height=1.6cm, minimum width=0.5cm,rectangle,
+	               style={fill=gray!20,draw,thick}]
+\tikzstyle{muxb} = [node distance=0.4cm,style={minimum size=0.5cm}]
+\tikzstyle{vide} = []
+\tikzstyle{noeud} = [style={circle,fill=black,minimum size=0cm}]
+\tikzstyle{fil} = [->,style={thick}]
+\tikzstyle{ecrit} = [font=\sffamily\small\bfseries]
+\tikzstyle{exterieur} = [dashed, draw]
+\tikzstyle{hypot} = [dashed]
+
+\begin{document}
+
+\title{Architecture du processeur}
+\author{Baptiste Lefebvre, Li-yao Xia, Antonin Delpeuch}
+\date{\today}
+
+\maketitle
+
+\section{Architecture}
+
+\subsection{Fonctionnement}
+
+L'heure est représentée dans un compteur qui est incrémenté
+périodiquement indépendemment de toute instruction.
+On dispose également d'une file de priorité qui stocke des paires $(date,
+adresse)$ : quand l'heure actuelle correspond à celle en tête de file, le
+code à l'adresse correspondante est exécuté. Ce code est écrit dans le
+langage assembleur décrit ci-dessous. Il est stocké dans une ROM.
+
+Cette file est gérée directement au niveau matériel avec un r\'{e}seau de
+tri. Ce tri se parallélise et est donc plus rapide que les tris classiques.
+
+Cette file permet de gérer les exceptions du calendrier : par exemple,
+pour rajouter un jour les années bissextiles, on insère dans la file un
+évènement à la date du 28 février de la prochaine année bissextile,
+qui permettera de mettre à jour la date correctement et d'insérer un nouvel évènement pour
+le prochain 28 février d'une année bissextile.
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[auto, node distance=1cm,>=latex']
+    
+    \draw (0,0) node [not] {}
+	(1,0) node [reg] {}
+	(2,0) node [not] {}
+	(3,0) node [reg] {}
+	(5,0) node [reg] {}
+	(7,0) node [reg] {}
+	(9,0) node [reg] {};
+    \end{tikzpicture}
+    \caption{Architecture du processeur}
+\end{figure}
+
+
+\subsection{Mémoire}
+
+On a une RAM de petite taille (par exemple pour stocker les résultats
+intermédiaires des calculs).
+
+Les registres sont :
+\begin{itemize}
+\item Les registres d'entrée (accessibles en lecture uniquement)
+\item Les registres de sortie (pour l'afficheur 7 segments)
+\item Les registres de calcul
+\item Un registre pour l'adresse de l'instruction courante
+\end{itemize}
+
+\section{Jeu d'instructions}
+
+On a deux types de données : des entiers et des dates, les durées étant
+stockées dans l'un des deux.
+
+\begin{itemize}
+\item Lire dans la RAM
+\item Écrire dans la RAM
+\item Saut (in)conditionnel
+\item (Pas de \texttt{jal})
+\item Opérations arithmétiques :
+\begin{itemize}
+\item Addition (entier $+$ entier, date $+$ entier, date $+$ date)
+\item Soustraction (idem)
+\item Multiplication (entier $\times$  entier, entier $\times$ date)
+\item Division
+\item Modulo
+\item Comparaison
+\end{itemize}
+\item Conversion entier / date
+\item exit
+\item Affichage arbitraire sur l'écran de la montre ($n$ bits)
+\item Insertion d'un élément dans la file
+\item Un \texttt{nop} !
+\end{itemize}
+
+\end{document}
+
+
