@@ -51,7 +51,7 @@ where
   vra = read_addr[n-1]; (* Virtual memory cells *)
   we = mux(vwa,0,wen);
   vwe = mux(vwa,wen,0);
-  mem = ram<n,n>(ra,we,wa,data);
+  mem = ram<n/2,n>(ra,we,wa,data);
   regwe = multidemux<v,n>(wa[..v-1],vwe);
   out = multiereg<2^v,n>(regwe,data);
   vo = multimux<v,n>(ra[..v-1],out);
