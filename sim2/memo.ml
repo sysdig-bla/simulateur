@@ -38,7 +38,7 @@ let get s ws sz =
   let out =
   try
     let k = Smap.find s !data in
-    if Array.length k <> sz || Array.length k.(0) <> ws
+    if Array.length k <> ws || Array.length k.(0) <> sz
     then raise Not_found
     else k
   with
