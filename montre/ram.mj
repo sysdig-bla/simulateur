@@ -7,14 +7,11 @@ where
 	end if
 end where
 
-ram_module<n>(wa:[n], ra:[n], wen, data:[n]) = o:[n]
+ram_module<n>(write_addr:[n], read_addr:[n], wen, data:[n]) = o:[n]
 where
-	write_enable = mux(wa[n-1],0,wen);
-	real_ra = mux(ra[n-1],zero<n>(),ra);
-	mem = ram<1024*n,n>(real_ra, write_enable,wa,data);
-	
-	
-
-	out = mux(ra[n-1],cur_out,mem);
+	write_enable = mux(write_addr[n-1],0,wen);
+	real_read_addr = muxn<n>(read_addr[n-1],zero<n>(),read_addr);
+	mem = ram<n,n>(real_read_addr,write_enable,write_addr,data);
+	o = muxn<n>(read_addr[n-1],zero<n>(),mem);
 end where
 
