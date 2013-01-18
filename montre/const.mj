@@ -1,2 +1,3 @@
 const s = 16
+const v = 3 (* 8 virtual memory cells *)
 

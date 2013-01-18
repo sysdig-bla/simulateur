@@ -1,17 +1,60 @@
-regn<n>(enable,i:[n]) = o:[n]
+multimux<as,ws>(a:[as],in:[2^as*ws]) = o:[ws] where
+  if as = 0
+    then o = in
+  else if as = 1
+    then o = muxn<ws>(a,in[ws..],in[..ws-1])
+    else
+      o = muxn<ws>( a[as-1],
+            multimux<as-1,ws>(a[..as-2],in[2^(as-1)*ws..]),
+            multimux<as-1,ws>(a[..as-2],in[..2^(as-1)*ws-1))
+  end if
+  end if
+end where
+
+multidemux<as,ws>(a:[as],in:[ws]) = o:[2^as*ws] where
+  if as = 0
+    then o = in
+  else if as = 1
+    then o = muxn<ws>(a,zero<ws>(),in).muxn<ws>(a,in,zero<ws>())
+  else
+    o2 = multidemux<as-1,ws>(a[..as-2],in);
+    o = muxn<ws>(a[as-1],zero<ws>(),o2).muxn<ws>(a[as-1],o2,zero<ws>())
+  end if
+  end if
+end where
+
+eregn<n>(enable,i:[n]) = o:[n]
 where
 	if n = 0 then
 		o = []
 	else
-		o = reg(mux(enable,i[0],o[0])).regn<n-1>(enable,i[1..n-1]);
+		o = reg(mux(enable,i[0],o[0])).eregn<n-1>(enable,i[1..n-1]);
 	end if
 end where
 
-ram_module<n>(write_addr:[n], read_addr:[n], wen, data:[n]) = o:[n]
+multiereg<n,ws>(we:[n],data:[ws]) = o:[n*ws]
 where
-	write_enable = mux(write_addr[n-1],0,wen);
-	real_read_addr = muxn<n>(read_addr[n-1],zero<n>(),read_addr);
-	mem = ram<n,n>(real_read_addr,write_enable,write_addr,data);
-	o = muxn<n>(read_addr[n-1],zero<n>(),mem);
+  if n = 0
+    then
+      o = []
+  else
+    o = ereg<ws>(we[0],data).multiereg<n-1,ws>(we[1..],data);
+  end if
+end where
+
+ram_module<n>(write_addr:[n], read_addr:[n], wen, data:[n]) =
+  (o:[n],out:[8*n])
+where
+  wa = write_addr[..n-2];
+  vwa = write_addr[n-1]; (* Virtual memory cells *)
+  ra = read_addr[..n-2];
+  vra = read_addr[n-1]; (* Virtual memory cells *)
+  we = mux(vwa,0,wen);
+  vwe = mux(vwa,wen,0);
+  mem = ram<n,n>(ra,we,wa,data);
+  regwe = multidemux<v,n>(wa[..v-1],vwe);
+  out = multiereg<2^v,n>(regwe,data);
+  vo = multimux<v,n>(ra[..v-1],out);
+  o = muxn<n>(vra,vo,mem);
 end where
 
