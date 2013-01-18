@@ -19,8 +19,8 @@ let load_data filename =
       let s = Scanf.fscanf h " %s" (fun s -> s) in
       let k,ws = Scanf.fscanf h " %d %d" (fun x y-> x,y) in
       let j = ref 0 in
-      let b = Array.make_matrix ws (1 lsl k) false in
-      while !j < (1 lsl k)*ws do
+      let b = Array.make_matrix ws k false in
+      while !j < k*ws do
         match bool_of_char (Scanf.fscanf h " %c" (fun c -> c)) with
           | 0 -> b.(!j mod ws).(!j/ws) <- false; incr j;
           | 1 -> b.(!j mod ws).(!j/ws) <- true; incr j;
@@ -35,18 +35,26 @@ let dataflag = ref true
 
 (* Default to 0 and print warning *)
 let get s ws sz =
-  let out =
   try
-    let k = Smap.find s !data in
+    let k = try
+      Smap.find s !data
+    with Not_found -> Smap.find "default" !data in
     if Array.length k <> ws || Array.length k.(0) <> sz
-    then raise Not_found
+    then begin
+      let mem = Array.make_matrix ws sz false in
+      for i = 0 to min (Array.length k) ws -1 do
+        for j = 0 to min (Array.length k.(0)) sz -1 do
+          mem.(i).(j) <- k.(i).(j)
+        done
+      done;
+      mem
+    end
     else k
   with
   | Not_found
   | Invalid_argument _ ->
       if !dataflag
-        then Printf.eprintf "Incomplete data...Default to 0\n%!";
+        then Printf.eprintf
+          "Padding data with 0\n%!";
       dataflag := false;
       Array.make_matrix ws sz false
-  in print_matrix out;
-  out

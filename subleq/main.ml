@@ -55,7 +55,7 @@ let main () =
         then (Filename.chop_suffix !file ".sq")^".mem"
         else !file^".s" in
       let h = open_out f in
-      Subleq.print_binary h l !a !b !c;
+      Subleq.print_binary h l;
       close_out h
   end
 
