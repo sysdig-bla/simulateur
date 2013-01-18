@@ -7,20 +7,25 @@
 \usepackage{pgf}
 \usepackage{tikz}
 \usetikzlibrary{arrows,automata}
-\usetikzlibrary{positioning}
+\usetikzlibrary{positioning,calc}
 
 \tikzstyle{operateur} =
-[style={circle,fill=gray!20,draw,font=\sffamily\LARGE\bfseries}]
+[style={circle,fill=gray!20,draw,font=\sffamily\large\bfseries}]
 \tikzstyle{not} = [draw,style={circle,fill=gray!20},minimum size=0.0cm]
 \tikzstyle{reg} = [style={fill=gray!20,draw,thick,minimum size=0.8cm}]
 \tikzstyle{boite} = [minimum height=2cm, minimum width=2cm,rectangle,
 					style={fill=gray!20,draw,thick}]
-\tikzstyle{mux} = [minimum height=1.6cm, minimum width=0.5cm,rectangle,
+\tikzstyle{rambox} = [minimum height=7cm, minimum width=2cm,rectangle,
+					style={fill=gray!20,draw,thick}]
+\tikzstyle{muxv} = [minimum height=1.6cm, minimum width=0.5cm,rectangle,
+	               style={fill=gray!20,draw,thick}]
+\tikzstyle{mux} = [minimum height=0.5cm, minimum width=1.6cm,rectangle,
 	               style={fill=gray!20,draw,thick}]
 \tikzstyle{muxb} = [node distance=0.4cm,style={minimum size=0.5cm}]
 \tikzstyle{vide} = []
 \tikzstyle{noeud} = [style={circle,fill=black,minimum size=0cm}]
 \tikzstyle{fil} = [->,style={thick}]
+\tikzstyle{filb} = [style={thick}]
 \tikzstyle{ecrit} = [font=\sffamily\small\bfseries]
 \tikzstyle{exterieur} = [dashed, draw]
 \tikzstyle{hypot} = [dashed]
@@ -33,80 +38,92 @@
 
 \maketitle
 
-\section{Architecture}
-
-\subsection{Fonctionnement}
-
-L'heure est représentée dans un compteur qui est incrémenté
-périodiquement indépendemment de toute instruction.
-On dispose également d'une file de priorité qui stocke des paires $(date,
-adresse)$ : quand l'heure actuelle correspond à celle en tête de file, le
-code à l'adresse correspondante est exécuté. Ce code est écrit dans le
-langage assembleur décrit ci-dessous. Il est stocké dans une ROM.
-
-Cette file est gérée directement au niveau matériel avec un r\'{e}seau de
-tri. Ce tri se parallélise et est donc plus rapide que les tris classiques.
-
-Cette file permet de gérer les exceptions du calendrier : par exemple,
-pour rajouter un jour les années bissextiles, on insère dans la file un
-évènement à la date du 28 février de la prochaine année bissextile,
-qui permettera de mettre à jour la date correctement et d'insérer un nouvel évènement pour
-le prochain 28 février d'une année bissextile.
-
 \begin{figure}
-    \centering
+   \centering
     \begin{tikzpicture}[auto, node distance=1cm,>=latex']
     
-    \draw (0,0) node [not] {}
-	(1,0) node [reg] {}
-	(2,0) node [not] {}
-	(3,0) node [reg] {}
-	(5,0) node [reg] {}
-	(7,0) node [reg] {}
-	(9,0) node [reg] {};
+    \node[not] at (-3cm,-1cm) (n1) {};
+    \node[reg, node distance=0.2cm, right=of n1] (r1) {};
+    \node[not, node distance=0.2cm, right=of r1] (n2) {};
+    \node[reg, right=of r1] (r2) {};
+    \node[reg, right=of r2] (r3) {};
+    \node[reg, right=of r3] (r4) {};
+    \node[reg, right=of r4] (r5) {};
+
+    \node[above right of= r5] (ctrl1) {};
+    \node[above left of= n1] (ctrl2) {};
+    \draw[fil] (n1) -- (r1);
+    \draw[fil] (r1) -- (n2);
+    \draw[fil] (n2) -- (r2);
+    \draw[fil] (r2) -- (r3);
+    \draw[fil] (r3) -- (r4);
+    \draw[fil] (r4) -- (r5);
+    \draw[filb] (r5) -| (ctrl1.mid);
+    \draw[filb] (ctrl1.mid) -- (ctrl2.mid);
+    \draw[fil] (ctrl2.mid) |- (n1);
+
+    \foreach \i in {0,1,2} {
+	\node[reg] at ($(0,-5)+3*(0.5+\i,0)$) (rn\i)  {};
+	\node[mux, below of=rn\i, node distance=1.5cm] (mn\i)
+         {0\hspace{0.6cm}1};
+	\node[below left of=mn\i, node distance=1cm] (ctrlrop\i) {};
+	\node[below right of=mn\i, node distance=1.5cm] (ctrlroq\i) {};
+	\node[above left of=rn\i, node distance=1.5cm] (ctrlal\i) {};
+	\draw[fil] (mn\i) -- (rn\i);
+	\draw[fil] (ctrlrop\i.mid) -|  ($(mn\i)+(-0.4cm,-0.25cm)$);
+	\draw[filb] (ctrlrop\i.mid) -| (ctrlal\i.mid);
+	\draw[filb] (ctrlal\i.mid) -| (rn\i);
+	\draw[fil] (ctrlroq\i.mid) -| ($(mn\i)+(0.4cm,-0.25cm)$); 
+	}
+   
+    \node at ($(ctrlroq2)+(4cm,0)$) (ctrlrr) {};
+    \draw[filb] (ctrlroq2.mid) -- (ctrlrr.mid);
+    \draw[filb] (ctrlroq0.mid) -- (ctrlroq1.mid) -- (ctrlroq2.mid);
+
+    \node[rambox] at ($(ctrlrr)+(-2cm,7cm)$) (rammod) {Memory}; 
+    \draw[filb] (ctrlrr.mid) |- (rammod);
+
+    \node[reg] at (0,4) (pcreg) {};
+    \node[muxv] at
+($(pcreg)-(1.5cm,0.4cm)$) (pcmuxi) {};
+    \node[muxv, node distance=3cm, left of=pcreg] (pcmux) {};
+    \node at ($(pcmux)+(0,0.4cm)$) (pcmux0) {0};
+    \node at ($(pcmux)+(0,-0.4cm)$) (pcmux1) {1};
+    \node at ($(pcmuxi)+(0,0.4cm)$) (pcmuxi0) {0};
+    \node at ($(pcmuxi)+(0,-0.4cm)$) (pcmuxi1) {1};
+    \node[node distance=1.5cm, above right of=pcreg] (pcrct) {};
+    \node[node distance=1.3cm, above left of=pcmux] (pcl1ct) {};
+    \node[node distance=1.7cm, above left of=pcmux] (pcl2ct) {};
+    \node[operateur, node distance=2cm, above of=pcreg] (incr1) {+1};
+    \draw[fil] (pcmux) -- ($(pcmuxi)+(-0.25,0.4cm)$);
+    \draw[filb] (pcreg) -| (pcrct.mid) -| (pcl1ct.mid);
+    \draw[fil] (pcl1ct.mid) |- ($(pcmux)+(-0.25cm,0.4cm)$);
+    \draw[fil] (pcrct.mid) |- (incr1);
+    \draw[fil] (incr1) -| (pcl2ct.mid) |- ($(pcmux)+(-0.25cm,-0.4cm)$);
+    
+    \node[operateur, node distance=2cm, below of=pcmux] (pcunion) {U};
+    \draw[fil] (pcunion) -- (pcmux);
+    \draw[fil] ($(pcmuxi)+(0.25cm,0.4cm)$) -- (pcreg);
+
+    \node[boite] at ($(rammod)+(-3.5cm,2cm)$) (muxers) {Muxers};
+    \draw[fil] ($(muxers)+(1cm,0.6cm)$) -- ($(rammod)+(-1cm,2.6cm)$);
+    \draw[filb] ($(muxers)+(1cm,0.6cm)$) -- ($(rammod)+(-1cm,2.6cm)$)
+         ++(-0.9cm,0.15cm) node {wa};
+    \draw[fil] ($(muxers)+(1cm,0.2cm)$) -- ($(rammod)+(-1cm,2.2cm)$);
+    \draw[filb] ($(muxers)+(1cm,0.2cm)$) -- ($(rammod)+(-1cm,2.2cm)$)
+         ++(-0.9cm,0.15cm) node {ra};
+    \draw[fil] ($(muxers)+(1cm,-0.2cm)$) -- ($(rammod)+(-1cm,1.8cm)$);
+    \draw[filb] ($(muxers)+(1cm,-0.2cm)$) -- ($(rammod)+(-1cm,1.8cm)$)
+         ++(-0.9cm,0.15cm) node {wen};
+    \draw[fil] ($(muxers)+(1cm,-0.6cm)$) -- ($(rammod)+(-1cm,1.4cm)$);
+    \draw[filb] ($(muxers)+(1cm,-0.6cm)$) -- ($(rammod)+(-1cm,1.4cm)$)
+         ++(-0.9cm,0.15cm) node {data};
+
     \end{tikzpicture}
     \caption{Architecture du processeur}
 \end{figure}
 
 
-\subsection{Mémoire}
-
-On a une RAM de petite taille (par exemple pour stocker les résultats
-intermédiaires des calculs).
-
-Les registres sont :
-\begin{itemize}
-\item Les registres d'entrée (accessibles en lecture uniquement)
-\item Les registres de sortie (pour l'afficheur 7 segments)
-\item Les registres de calcul
-\item Un registre pour l'adresse de l'instruction courante
-\end{itemize}
-
-\section{Jeu d'instructions}
-
-On a deux types de données : des entiers et des dates, les durées étant
-stockées dans l'un des deux.
-
-\begin{itemize}
-\item Lire dans la RAM
-\item Écrire dans la RAM
-\item Saut (in)conditionnel
-\item (Pas de \texttt{jal})
-\item Opérations arithmétiques :
-\begin{itemize}
-\item Addition (entier $+$ entier, date $+$ entier, date $+$ date)
-\item Soustraction (idem)
-\item Multiplication (entier $\times$  entier, entier $\times$ date)
-\item Division
-\item Modulo
-\item Comparaison
-\end{itemize}
-\item Conversion entier / date
-\item exit
-\item Affichage arbitraire sur l'écran de la montre ($n$ bits)
-\item Insertion d'un élément dans la file
-\item Un \texttt{nop} !
-\end{itemize}
 
 \end{document}
 
