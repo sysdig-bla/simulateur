@@ -19,8 +19,8 @@ let load_data filename =
       let s = Scanf.fscanf h " %s" (fun s -> s) in
       let k,ws = Scanf.fscanf h " %d %d" (fun x y-> x,y) in
       let j = ref 0 in
-      let b = Array.make_matrix ws (1 lsl k) false in
-      while !j < (1 lsl k)*ws do
+      let b = Array.make_matrix ws k false in
+      while !j < k*ws do
         match bool_of_char (Scanf.fscanf h " %c" (fun c -> c)) with
           | 0 -> b.(!j mod ws).(!j/ws) <- false; incr j;
           | 1 -> b.(!j mod ws).(!j/ws) <- true; incr j;
