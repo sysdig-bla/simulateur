@@ -69,12 +69,7 @@ let rec print_binpart h = function
       print_binpart h t
   | [] -> ()
 
-let print_binary h l a b c =
-  let la,lb,lc = split l in
-  Printf.fprintf h "3\n";
-  Printf.fprintf h "%s %d %d\n" a size (List.length la);
-  print_binpart h la;
-  Printf.fprintf h "%s %d %d\n" b size (List.length lb);
-  print_binpart h lb;
-  Printf.fprintf h "%s %d %d\n" c size (List.length lc);
-  print_binpart h lc
+let print_binary h l =
+  Printf.fprintf h "1\n";
+  Printf.fprintf h "default %d %d\n" (List.length l) size;
+  print_binpart h l;

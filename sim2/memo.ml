@@ -35,20 +35,26 @@ let dataflag = ref true
 
 (* Default to 0 and print warning *)
 let get s ws sz =
-  let out =
   try
-    let k = Smap.find s !data in
+    let k = try
+      Smap.find s !data
+    with Not_found -> Smap.find "default" !data in
     if Array.length k <> ws || Array.length k.(0) <> sz
-    then raise Not_found
+    then begin
+      let mem = Array.make_matrix ws sz false in
+      for i = 0 to min (Array.length k) ws -1 do
+        for j = 0 to min (Array.length k.(0)) sz -1 do
+          mem.(i).(j) <- k.(i).(j)
+        done
+      done;
+      mem
+    end
     else k
   with
   | Not_found
   | Invalid_argument _ ->
       if !dataflag
         then Printf.eprintf
-          "Incomplete data...Asked %s %d %d. Default to 0\n%!"
-          s sz ws;
+          "Padding data with 0\n%!";
       dataflag := false;
       Array.make_matrix ws sz false
-  in
-  out
