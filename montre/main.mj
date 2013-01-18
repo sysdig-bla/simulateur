@@ -19,5 +19,5 @@ where
   read_addr_aux = muxn<s>(read_va,reg_a,pc);
   read_addr = muxn<s>(read_vb,reg_b,read_addr_aux);
   data = reg_vb;
-  read_ram = ram_module<s>(write_addr,read_addr,write_ram,data);
+  (read_ram,output) = ram_module<s>(write_addr,read_addr,write_ram,data);
 end where
