@@ -1,6 +1,6 @@
-main() = (o:[5+2*s+2])
+main() = (o:[2*s+2])
 where
-	o = step.pc.read_ram.leqz.step[4];
+	o = pc.read_ram.leqz.step[4];
   step = scheduler();
   write_ram = step[4];
   write_a_or_va = step[0] + step[2];
@@ -17,7 +17,7 @@ where
   reg_c = write<s>(write_c,read_ram);
   reg_vb = write<s>(write_vb,read_ram);
   write_addr = reg_b;
-  pc = PC<s>(read_ram,leqz,step[4],read_a_or_b_or_c);
+  pc = pc<s>(reg_c,leqz,step[4],read_a_or_b_or_c);
   read_addr_aux = muxn<s>(read_va,reg_a,pc);
   read_addr = muxn<s>(read_vb,reg_b,read_addr_aux);
   data = vb_minus_va;
