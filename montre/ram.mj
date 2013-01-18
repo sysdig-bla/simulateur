@@ -18,7 +18,8 @@ multidemux<as,ws>(a:[as],in:[ws]) = o:[2^as*ws] where
     then o = muxn<ws>(a,zero<ws>(),in).muxn<ws>(a,in,zero<ws>())
   else
     o2 = multidemux<as-1,ws>(a[..as-2],in);
-    o = muxn<ws>(a[as-1],zero<ws>(),o2).muxn<ws>(a[as-1],o2,zero<ws>())
+    o = muxn<2^(as-1)*ws>(a[as-1],zero<2^(as-1)*ws>(),o2)
+        .muxn<2^(as-1)*ws>(a[as-1],o2,zero<2^(as-1)*ws>())
   end if
   end if
 end where
@@ -43,7 +44,7 @@ where
 end where
 
 ram_module<n>(write_addr:[n], read_addr:[n], wen, data:[n]) =
-  (o:[n],out:[8*n])
+  (o:[n],out:[2^v*n])
 where
   wa = write_addr[..n-2];
   vwa = write_addr[n-1]; (* Virtual memory cells *)
@@ -51,10 +52,13 @@ where
   vra = read_addr[n-1]; (* Virtual memory cells *)
   we = mux(vwa,0,wen);
   vwe = mux(vwa,wen,0);
-  mem = ram<n/2,n>(ra,we,wa,data);
-  regwe = multidemux<v,n>(wa[..v-1],vwe);
+  mem = ram<n-1,n>(ra,we,wa,data);
+  regwe = multidemux<v,1>(wa[..v-1],vwe);
   out = multiereg<2^v,n>(regwe,data);
   vo = multimux<v,n>(ra[..v-1],out);
   o = muxn<n>(vra,vo,mem);
 end where
 
+rrr(wa:[s],ra:[s],we,d:[s]) = (o:[s],out:[2^v*n]) where
+  (o,out) = ram_module<s>(wa,ra,we,d)
+end where
