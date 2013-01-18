@@ -38,15 +38,17 @@ let get s ws sz =
   let out =
   try
     let k = Smap.find s !data in
-    if Array.length k <> ws || Array.length k.(0) <> sz
+    if Array.length k <> sz || Array.length k.(0) <> ws
     then raise Not_found
     else k
   with
   | Not_found
   | Invalid_argument _ ->
       if !dataflag
-        then Printf.eprintf "Incomplete data...Default to 0\n%!";
+        then Printf.eprintf
+          "Incomplete data...Asked %s %d %d. Default to 0\n%!"
+          s sz ws;
       dataflag := false;
       Array.make_matrix ws sz false
-  in print_matrix out;
+  in
   out
