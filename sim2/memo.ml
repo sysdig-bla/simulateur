@@ -7,9 +7,13 @@ let bool_of_char = function
   | '1' -> 1
   | _ -> 2
 
-let print_matrix =
-  Array.iter (fun a -> Array.iter (fun x -> Printf.printf "%d " (if x
-then 1 else 0)) a)
+let print_matrix m =
+  for j = 0 to Array.length m.(0) - 1 do
+    for i = 0 to Array.length m -1 do
+      Printf.printf "%d" (if m.(i).(j) then 1 else 0)
+    done;
+    Printf.printf "\n%!"
+  done
 
 let load_data filename =
   try

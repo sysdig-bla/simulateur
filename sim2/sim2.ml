@@ -50,7 +50,7 @@ let len = Array.length
 
 let int_of_addr t a =
   let c = ref 0 in
-  for i = 0 to len a-1 do
+  for i = len a-1 downto 0 do
     c := if t.(a.(i)) then !c * 2 + 1 else !c * 2
   done;
   !c
