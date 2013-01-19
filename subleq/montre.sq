@@ -13,20 +13,20 @@
 
 # Initialization
 
-0 0 begin
+0 0 ;
 
 m22 -4 ;
 mone -5 ;
 m2013 -6 ;
 mtwo -7 ;
 
-begin:
 0 0 start
 
 # Memory map
 
 ## CONSTANTS ##
 
+m4096:-4096
 m2013:-2013
 
 m400:-400
@@ -46,9 +46,21 @@ mone:-1
 one:1
 
 p3:3
+p5:5
 
 seven:7
+
+p10:10
+
 twelve:12
+
+p15:15
+p20:20
+
+
+p35:35
+p40:40
+p45:45
 
 p23:23
 p59:59
@@ -56,16 +68,24 @@ p59:59
 p100:100
 p399:399
 
-
 ## Variables ##
 
 # zero and tmp are temporaries
 tmp:0
 zero:0
 
+# 4096 Hz program
+cyclesleft:4096
+
 # do {
 start:
+p10 cyclesleft main   ##
+0 0 start
 
+main:
+m4096 cyclesleft main ##
+
+p35 cyclesleft ;      ##
 ### INCR SECONDS ###
 tmp tmp ;
 zero zero ;
@@ -77,6 +97,7 @@ zero tmp ;
 # if tmp <= 59, goto start
 p59 tmp start
 
+p40 cyclesleft start  ##
 # reset seconds
 -1 -1 ;
 
@@ -91,6 +112,7 @@ zero tmp ;
 # if tmp <= 59, goto start
 p59 tmp start
 
+p40 cyclesleft start  ##
 # reset minutes
 -2 -2 ;
 
@@ -105,6 +127,7 @@ zero tmp ;
 # if tmp <= 23, goto start
 p23 tmp start
 
+p40 cyclesleft start  ##
 # reset hours
 -3 -3 ;
 
@@ -120,6 +143,7 @@ zero tmp ;
 # if tmp <= 7
 seven tmp newday
 
+p40 cyclesleft start  ##
 -7 -7 ;
 
 newday:
@@ -135,69 +159,96 @@ twelve tmp ;
 tmp zero ;
 -5 zero ttyonedays
 # November ?
+p10 cyclesleft start  ##
 one zero trtydays
 # October ?
+p10 cyclesleft start  ##
 one zero ttyonedays
 # September ?
+p10 cyclesleft start  ##
 one zero trtydays
 # August ?
+p10 cyclesleft start  ##
 one zero ttyonedays
 # July ?
+p10 cyclesleft start  ##
 one zero ttyonedays
 # June ?
+p10 cyclesleft start  ##
 one zero trtydays
 # May ?
+p10 cyclesleft start  ##
 one zero ttyonedays
 # April ?
+p10 cyclesleft start  ##
 one zero trtydays
 # March ?
+p10 cyclesleft start  ##
 one zero ttyonedays
 # February ?
+p10 cyclesleft start  ##
 one zero february
 # January ?
+p10 cyclesleft start  ##
 zero zero ttyonedays
 
 february:
+p15 cyclesleft start  ##
 zero zero ;
 -6 zero ;
 # Is the year congruent to 400 ?
 loop400:
+p10 cyclesleft start  ##
 m400 zero loop400
+p10 cyclesleft start  ##
 p399 zero loop100
+p10 cyclesleft start  ##
 zero zero ttyeightdays
 # to 100 ?
 loop100:
+p10 cyclesleft start  ##
 m100 zero loop100
+p10 cyclesleft start  ##
 one zero ttyeightdays
+p10 cyclesleft start  ##
 p100 zero ;
 # to 4 ?
 loop4:
+p10 cyclesleft start  ##
 m4 zero loop4
+p10 cyclesleft start  ##
 p3 zero ttyeightdays
+p10 cyclesleft start  ##
 zero zero ttyninedays
 
 ttyeightdays:
+p15 cyclesleft start  ##
 m29 zero ;
 0 0 zrdays
 
 ttyninedays:
+p15 cyclesleft start  ##
 m30 zero ;
 0 0 zrdays
 
 trtydays:
+p15 cyclesleft start  ##
 m31 zero ;
 0 0 zrdays
 
 ttyonedays:
+p15 cyclesleft start  ##
 m32 zero ;
 0 0 zrdays
 
 zrdays:
+p15 cyclesleft start  ##
 # if days >= value stored in zero then incr month
 -4 zero newmonth
 0 0 start
 
 newmonth:
+p45 cyclesleft start  ##
 -4 -4 ;
 mone -4 ;
 
@@ -212,6 +263,7 @@ zero tmp ;
 # if tmp <= 12, goto start
 twelve tmp start
 
+p45 cyclesleft start  ##
 # reset months
 -5 -5 ;
 mone -5 ;
