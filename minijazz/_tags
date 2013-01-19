@@ -1,0 +1,3 @@
+<**/*.{byte,native}>: use_unix, use_str, pkg_menhirLib
+<global> or <parser> or <main> or <analysis> or <simulator> or <assembler> or <netlist> or <netlist_simulator>: include
+true: use_menhir

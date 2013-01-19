@@ -1,0 +1,302 @@
+const s = 16
+const v = 3 (* 8 virtual memory cells *)
+
+zero<n>() = o:[n]
+where
+  if n = 0
+  then o = []
+  else o = 0.zero<n-1>()
+  end if
+end where
+
+adder<n>(a:[n],b:[n],c_in) = (o:[n],c_out)
+where
+  if n = 0
+  then
+    o = [];
+    c_out = c_in;
+  else
+    if n = 1
+    then
+      o = a ^ b ^ c_in;
+      c_out = (a & b) + ((a + b) & c_in);
+    else
+      (o1, c_out1) = adder<n-1>(a[..n-2], b[..n-2], c_in);
+      o2 = (a[n-1] ^ b[n-1]) ^ c_out1;
+      c_out = (a[n-1] & b[n-1]) + ((a[n-1] ^ b[n-1]) & c_out1);
+      o = o1 . o2;
+    end if
+  end if
+end where
+
+add<n>(a:[n],b:[n]) = o:[n]
+where
+  (o,c) = adder<n>(a,b,0);
+end where
+
+notn<n>(a:[n]) = o:[n]
+where
+	if n = 0
+	then o = []
+	else o = (not a[0]).notn<n-1>(a[1..])
+	end if
+end where
+
+sub<n>(a:[n],b:[n]) = o:[n]
+where
+  c = notn<n>(b);
+  (o,k) = adder<n>(a,c,1);
+end where
+
+scheduler () = o:[5] where
+	a0 = not(reg(not(o[4])));
+	a1 = reg(o[0]);
+	a2 = reg(o[1]);
+	a3 = reg(o[2]);
+	a4 = reg(o[3]);
+	o = a0.a1.a2.a3.a4;
+end where
+
+muxn<n> (a,b:[n],c:[n]) = o:[n] where
+  if n = 0 then
+    o = []
+  else
+    o = mux(a,b[0],c[0]).muxn<n-1>(a,b[1..],c[1..])
+  end if
+end where
+
+regn<n>(i:[n]) = o:[n] where
+  if n = 0
+  then
+    o = []
+  else
+    o = reg(i[0]).regn<n-1>(i[1..])
+  end if
+end where
+
+write<n>(write_enable,i:[n]) = o:[n] where
+  a = muxn<n>(write_enable,i[0..n-1],o[0..n-1]);
+  o = regn<n>(a)
+end where
+
+reverse<n>(i:[n]) = o:[n]
+where
+    if n = 0 then
+	o = []
+    else
+    	o = reverse<n-1>(i[1..n-1]).i[0]
+    end if
+end where
+
+
+Dec7(b : [4]) = s : [7]
+where
+    n = not b[0];
+    d1 = mux (b[1], 0, n);
+    d2 = mux (b[1], n, 1);
+    d3 = mux (b[1], n, 0);
+    d4 = mux (b[1], 1, n) ;
+    d5 = mux (b[1], n, b[0]);
+    d6 = mux(b[1], b[0], 1);
+    d7 = mux(b[1],b[0],n);
+    d8 = mux(b[1],1,b[0]);
+
+    t1 = mux(b[2],d2,d1);
+    t2 = mux(b[2],d2,b[1]);
+    t3 = mux(b[2],d5,d4);
+    t4 = mux(b[2],1,d6);
+    t5 = mux(b[2],d7,1);
+    t6 = mux(b[2],d8,d4);
+
+    s = mux(b[3],1,t1) . mux(b[3],1,t2) . mux(b[2],d3,n) . mux(b[3],1,t3) .mux(b[3],1,t4) . mux(b[3],1,t5) . mux(b[3],1,t6) ;
+end where
+
+add3 (i:[4]) = o:[4]
+where
+    greater = (i[1] & (not i[0]) &  (i[2] + i[3])) + i[0];
+    n = not(i[3]);
+    d2 = mux(i[3],i[0],0);
+    d1 = (not(i[1] + i[3])) + (i[3] & i[2]);
+
+    a0 = mux(greater,n,i[3]);
+    a1 = mux(greater,d1,i[2]);
+    a2 = mux(greater,d2,i[1]);
+    a3 = greater;
+
+    o = a3.a2.a1.a0;
+end where
+
+bcd (i:[8]) = o:[8]
+where
+    b1 = add3(i[5].i[6].i[7].0);
+    b2 = add3(b1[1..3].i[4]);
+    b3 = add3(b2[1..3].i[3]);
+    b4 = add3(b3[1..3].i[2]);
+    b5 = add3(b4[1..3].i[1]);
+    b6 = add3(0.b1[0].b2[0].b3[0]);
+    b7 = add3(b6[1..3].b4[0]);
+    
+    o = i[0].b5[3].b5[2].b5[1].b5[0].b7[3].b7[2].b7[1]
+end where
+
+neqz<n>(a:[n]) = o where
+  if n=0
+    then o=0
+  else if n=1
+    then o=a
+  else
+    o=a[0]+neqz<n-1>(a[1..])
+  end if
+  end if
+end where
+
+eqz<n>(a:[n]) = o where
+  o = not neqz<n>(a)
+end where
+
+leqz<n>(a:[n]) = o where
+  if n = 0
+    then
+      o = 1
+    else
+      o = a[n-1] + eqz<n>(a)
+  end if
+end where
+
+muxn<n>(a,b:[n],c:[n]) = o:[n] where
+  if n = 0
+    then o = []
+    else o = mux(a,b[0],c[0]).muxn<n-1>(a,b[1..],c[1..])
+  end if
+end where
+
+regn<n>(a:[n]) = b:[n] where
+  if n = 0
+    then b = []
+    else b = reg(a[0]).regn<n-1>(a[1..])
+  end if
+end where
+
+incr1<n>(x:[n]) = (o:[n],c) where
+  if n = 0
+    then
+      o=[];
+      c=1
+  else if n = 1
+    then
+      o=not x;
+      c=x
+  else
+    (o1,c1) = incr1<n-1>(x[..n-2]);
+    o = o1.(x[n-1]^c1);
+    c = c1 & x[n-1]
+  end if
+  end if
+end where
+
+pc<n>(C:[n],leqz,step5,read) = branch:[n] where
+  (pc1,dummy) = incr1<n>(branch);
+  pci = muxn<n>(read,pc1,branch);
+  branch = muxn<n>(leqz&step5,C,pc);
+  pc = regn<n>(pci)
+end where
+
+multimux<as,ws>(a:[as],in:[2^as*ws]) = o:[ws] where
+  if as = 0
+    then o = in
+  else if as = 1
+    then o = muxn<ws>(a,in[ws..],in[..ws-1])
+    else
+      o = muxn<ws>( a[as-1],
+            multimux<as-1,ws>(a[..as-2],in[2^(as-1)*ws..]),
+            multimux<as-1,ws>(a[..as-2],in[..2^(as-1)*ws-1]))
+  end if
+  end if
+end where
+
+multidemux<as,ws>(a:[as],in:[ws]) = o:[2^as*ws] where
+  if as = 0
+    then o = in
+  else if as = 1
+    then o = muxn<ws>(a,zero<ws>(),in).muxn<ws>(a,in,zero<ws>())
+  else
+    o2 = multidemux<as-1,ws>(a[..as-2],in);
+    o = muxn<2^(as-1)*ws>(a[as-1],zero<2^(as-1)*ws>(),o2)
+        .muxn<2^(as-1)*ws>(a[as-1],o2,zero<2^(as-1)*ws>())
+  end if
+  end if
+end where
+
+eregn<n>(enable,i:[n]) = o:[n]
+where
+	if n = 0 then
+		o = []
+	else
+		o = reg(mux(enable,i[0],o[0])).eregn<n-1>(enable,i[1..n-1]);
+	end if
+end where
+
+multiereg<n,ws>(we:[n],data:[ws]) = o:[n*ws]
+where
+  if n = 0
+    then
+      o = []
+  else
+    o = eregn<ws>(we[0],data).multiereg<n-1,ws>(we[1..],data);
+  end if
+end where
+
+ram_module<n>(write_addr:[n], read_addr:[n], wen, data:[n]) = (o:[n],out:[2^v*n])
+where
+  ra_reg = regn<n>(read_addr);
+  wa = write_addr[..n-2];
+  vwa = write_addr[n-1]; (* Virtual memory cells *)
+  ra = ra_reg[..n-2];
+  vra = ra_reg[n-1]; (* Virtual memory cells *)
+  we = mux(vwa,0,wen);
+  vwe = mux(vwa,wen,0);
+  mem = ram<n-1,n>(read_addr[..n-2],we,wa,data);
+  regwe = multidemux<v,1>(wa[..v-1],vwe);
+  out = multiereg<2^v,n>(regwe,data);
+  vo = multimux<v,n>(ra[..v-1],out);
+  o = muxn<n>(vra,vo,mem);
+end where
+
+main() = (disp_dec7s:[28])
+where
+  step = scheduler();
+  
+  (* Autorisation pour l'écriture sur les registres *)
+  write_a_or_va = step[1] + step[3];
+  write_b = step[2];
+  
+  (* Autorisation pour les demandes de lecture en RAM *)
+  read_a_or_b_or_c = step[0] + step[1] + step[4];
+  read_va = step[2];
+  read_vb = step[3];
+  
+  (* Autorisation pour l'écriture en RAM *)
+  write_ram = step[4];
+
+  reg_a = write<s>(write_a_or_va,read_ram);
+  reg_b = write<s>(write_b,read_ram);
+  value_vb = read_ram;
+  C = read_ram;
+
+  vb_minus_va = sub<s>(value_vb,reg_a);
+  leqz = leqz<s>(vb_minus_va);
+  write_addr = reg_b;
+  data = vb_minus_va;    
+  
+  k = bcd(output[112..119]).bcd(output[120..127]);
+  kp = reverse<16>(k);
+  disp_dec7s =
+Dec7(kp[8..11]).Dec7(kp[12..15]).
+Dec7(kp[0..3]).Dec7(kp[4..7]);
+
+  pc = pc<s>(C,reg(leqz),step[0],read_a_or_b_or_c);
+  read_addr_aux = muxn<s>(read_va,reg_a,pc);
+  read_addr = muxn<s>(read_vb,reg_b,read_addr_aux);
+  (read_ram,output) = ram_module<s>(write_addr,read_addr,write_ram,data);
+end where
+

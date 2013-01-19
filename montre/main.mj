@@ -1,4 +1,4 @@
-main() = (output:[8*s])
+main() = (disp_dec7s:[28])
 where
   step = scheduler();
   
