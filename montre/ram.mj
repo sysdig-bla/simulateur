@@ -58,4 +58,3 @@ where
   vo = multimux<v,n>(ra[..v-1],out);
   o = muxn<n>(vra,vo,mem);
 end where
-

@@ -58,7 +58,6 @@ We discovered the Subleq instruction set, which is made of only one
 instruction, called \texttt{subleq}. Here is the behaviour of
 \texttt{subleq a b c} :
 
-\centering
 \begin{verbatim}
 b := b - a;
 if b > 0 then
@@ -75,12 +74,12 @@ As the chip always handle signed values, we decided that writing
 reading) from a negative address sets (respectively returns) the value of
 the given output (which is a value displayed on 7 segment modules).
 
-We also choosed to implement the conversion from binary values
+We also chose to implement the conversion from binary values
 to 7-segment codes in the circuit. 
 
 \section{Development tools}
 
-We implemented an assembler and an assembly language interbreter which defines the
+We implemented an assembler and an assembly language interpreter which defines the
 behaviour we expect from our circuit.
 
 
