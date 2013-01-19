@@ -1,2 +1,0 @@
-parser/parser.ml: Array Ast Ident Lexing Location Misc Parsing Static
-parser/parser.mli: Ast Lexing
