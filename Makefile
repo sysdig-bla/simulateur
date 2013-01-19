@@ -5,7 +5,7 @@ montre.net:
 	./sim2/netlist_sim2.byte -s 50 -v -m subleq/montre.mem montre/montre.net
 
 real_time:
-	./sim2/netlist_sim2.byte -s 1000000000 -n 1024 -m subleq/montre.mem montre/montre.net -c 1024 -v
+	./sim2/netlist_sim2.byte -s 1000000000 -n 1024 -m subleq/montre.mem montre/montre.net -c 4096 -v
 
 display:
 	./sim2/netlist_sim2.byte -s 1000000000 -c 4096 -n 4096 -v -m subleq/montre.mem montre/montre.net -disp
