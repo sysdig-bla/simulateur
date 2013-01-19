@@ -15,7 +15,7 @@ where
   read_vb = step[4];
   
   (* Autorisation pour l'écriture en RAM *)
-  write_ram = step[4];
+  write_ram = step[0];
 
   reg_a = write<s>(write_a_or_va,read_ram);
   reg_b = write<s>(write_b,read_ram);
