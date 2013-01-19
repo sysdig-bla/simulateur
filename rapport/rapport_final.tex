@@ -42,10 +42,10 @@
 
 We wanted to design an original microprocessor. The requirements were :
 \begin{itemize}
-\item Be able to run a digital watch ;
-\item Use an uncommon architecture, contrasting with the MIPS standard as we
+\item To be able to run a digital watch ;
+\item To use an uncommon architecture, contrasting with the MIPS standard as we
 already discovered it in the compilation course ;
-\item Be able to run arbitrary programs.
+\item To be able to run arbitrary programs.
 \end{itemize}
 
 Reduced Instruction Set Chips (such as ARM) are widely used, but their instruction set
@@ -54,10 +54,11 @@ reduce this set ?
 
 \section{Instruction set}
 
-We discovered the Subleq instruction set, which is made of an only
+We discovered the Subleq instruction set, which is made of only one
 instruction, called \texttt{subleq}. Here is the behaviour of
 \texttt{subleq a b c} :
 
+\centering
 \begin{verbatim}
 b := b - a;
 if b > 0 then
