@@ -65,16 +65,33 @@ if b > 0 then
 else go to c
 \end{verbatim}
 
+With this only instruction, one can compute the usual operations
+and the chip remains therefore able to run arbitrary programs
+(as long as it has access to enough memory).
+
+As the chip always handle signed values, we decided that writing
+(respectively 
+reading) from a negative address sets (respectively returns) the value of
+the given output (which is a value displayed on 7 segment modules).
+
+We also choosed to implement the conversion from binary values
+to 7-segment codes in the circuit. 
+
+\section{Development tools}
+
+We implemented an assembler and an assembly language interbreter which defines the
+behaviour we expect from our circuit.
 
 
+\section{Watch}
 
-\section{Chip}
+We wrote the program of our watch in the subleq assembly language.
 
 \begin{figure}
    \centering
     \begin{tikzpicture}[auto, node distance=1cm,>=latex']
     
-    \node[not] at (-3cm,-1cm) (n1) {};
+    \node[not] at (4cm,4cm) (n1) {};
     \node[reg, node distance=0.2cm, right=of n1] (r1) {st1};
     \node[not, node distance=0.2cm, right=of r1] (n2) {};
     \node[reg, right=of r1] (r2) {st2};
@@ -115,7 +132,7 @@ else go to c
     \node[rambox] at ($(ctrlrr)+(-2cm,7cm)$) (rammod) {Memory}; 
     \draw[filb] (ctrlrr.mid) |- (rammod);
 
-    \node[reg] at (0,4) (pcreg) {};
+    \node[reg] at (2,0) (pcreg) {pc};
     \node[muxv] at
 ($(pcreg)-(1.5cm,0.4cm)$) (pcmuxi) {};
     \node[muxv, node distance=3cm, left of=pcreg] (pcmux) {};
@@ -123,6 +140,7 @@ else go to c
     \node at ($(pcmux)+(0,-0.4cm)$) (pcmux1) {1};
     \node at ($(pcmuxi)+(0,0.4cm)$) (pcmuxi0) {0};
     \node at ($(pcmuxi)+(0,-0.4cm)$) (pcmuxi1) {1};
+    \node at ($(pcmuxi)+(-0.5cm,-0.4cm)$) {c};
     \node[node distance=1.5cm, above right of=pcreg] (pcrct) {};
     \node[node distance=1.3cm, above left of=pcmux] (pcl1ct) {};
     \node[node distance=1.7cm, above left of=pcmux] (pcl2ct) {};
@@ -159,6 +177,10 @@ node {st5};
     \draw[fil] ($(muxers)+(1cm,-0.6cm)$) -- ($(rammod)+(-1cm,1.4cm)$);
     \draw[filb] ($(muxers)+(1cm,-0.6cm)$) -- ($(rammod)+(-1cm,1.4cm)$)
          ++(-0.9cm,0.15cm) node {data};
+
+    \draw[fil] (rn0) |- ++(4cm,3cm) |- ($(muxers)+(-1cm,0.7cm)$);
+    \draw[fil] (rn1) |- ++(1.2cm,2.8cm) |- ($(muxers)+(-1cm,0.5cm)$);
+    \draw[fil] (rn2) |- ++(-1.6cm,2.6cm) |- ($(muxers)+(-1cm,0.3cm)$);
 
     \end{tikzpicture}
     \caption{Chip's architecture}
