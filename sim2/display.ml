@@ -4,9 +4,10 @@ let segment = [| (0, 0); (5,-5); (45,-5); (50,0); (45,5); (5,5) |]
 let offsets = [|  (10,60,true); (10,60,false); (10,10,true); (10,10,false);
 (60,10,true); (60,60,true); (10,110,false); |]
 
-let modpos = [| (150,0); (150,70); (150,150); (150,220);
- (150,300); (150,370); (10,0); (10,70); (10,140); (10,210);
- (10,290); (10,360); (10,440); (10,510) |]
+let modpos = [| (150,0); (150,70); (150,140); (150,210); (150,310);
+(150,380);
+ (150,480); (150,550); (10,0); (10,70); (10,170); (10,240);
+ (10,340); (10,410)|]
 
 let display7 (pos_x, pos_y) values =
     let curr_poly = Array.make 6 (0,0) in
@@ -27,7 +28,7 @@ let display7 (pos_x, pos_y) values =
     done
 
 let nb_values = 14
-let screen_width = 600
+let screen_width = 650
 let screen_height = 300
 
 let invert_pair (x,y) = (y,x)

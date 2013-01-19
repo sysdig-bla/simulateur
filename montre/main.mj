@@ -27,7 +27,7 @@ where
 
   k = bcd4(output[32..43]).bcd(output[48..55]).bcd(output[64..71]).bcd(output[80..87]).bcd(output[96..103]).bcd(output[112..119]);
   disp_dec7s =
- Dec7(k[0..3]).Dec7(k[4..7]).Dec7(k[8..11]).Dec7(k[12..15]).iterdec7<5>(k[16..(16+5*8-1)]);
+ iterdec7<5>(k[16..(16+5*8-1)]).Dec7(k[0..3]).Dec7(k[4..7]).Dec7(k[8..11]).Dec7(k[12..15]);
 
   pc = pc<s>(C,reg(leqz),step[0],read_a_or_b_or_c);
   read_addr_aux = muxn<s>(read_va,reg_a,pc);
