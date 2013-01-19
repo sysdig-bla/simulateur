@@ -43,8 +43,7 @@ where
   end if
 end where
 
-ram_module<n>(write_addr:[n], read_addr:[n], wen, data:[n]) =
-  (o:[n],out:[2^v*n],vo:[n],out:[2^v*n],we,mem:[n],regwe:[8])
+ram_module<n>(write_addr:[n], read_addr:[n], wen, data:[n]) = (o:[n],out:[2^v*n])
 where
   ra_reg = regn<n>(read_addr);
   wa = write_addr[..n-2];
