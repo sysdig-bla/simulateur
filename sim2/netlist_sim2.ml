@@ -7,6 +7,7 @@ let cps = ref 0
 let disp = ref false
 let debug_verbose = ref false
 let verbose = ref false
+let cycles_per_print = ref 1
 let steps = ref 10
 let seconds = ref 0.
 let screen = ref false
@@ -32,6 +33,8 @@ let optlist =
       " Print output and tape");
     ("-v",Arg.Set verbose,
       " Print output");
+    ("-n",Arg.Set_int cycles_per_print,
+    	" Set number of cycles for on print");
     ("-s",Arg.Set_int steps,
       " Number of steps");
     ("-timeout",Arg.Set_float seconds,
@@ -111,6 +114,7 @@ let read_input in_vars tab =
   done
 
 let sim c =
+	let cycles_mod_print = ref 0 in
   let a = Array.make c.in_length false in
   let start = gtod () in
   let elapsed () = gtod () -. start in
@@ -121,9 +125,17 @@ let sim c =
     if !debug_verbose then
       print_state std c
     else if !verbose then
-      Format.printf "%3d - %a@."
-        i print_raw o;
-    if !seconds > 0. && elapsed()> !seconds
+    	begin
+    		if !cycles_mod_print < !cycles_per_print
+    		then incr cycles_mod_print
+    		else
+    			begin
+      			Format.printf "%3d - %a@."
+        		i print_raw o ;
+        		cycles_mod_print := 0;
+       		end
+        end ;
+	if !seconds > 0. && elapsed()> !seconds
 	then exit 0
   done
 
