@@ -13,14 +13,13 @@
 
 # Initialization
 
-0 0 begin
+0 0 ;
 
 m22 -4 ;
 mone -5 ;
 m2013 -6 ;
 mtwo -7 ;
 
-begin:
 0 0 start
 
 # Memory map
