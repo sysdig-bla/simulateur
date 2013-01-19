@@ -1,25 +1,34 @@
-main() = (o:[2*s+2])
+main() = (o:[8+5*s])
 where
-	o = pc.read_ram.leqz.step[4];
+	o = pc.1.1.reg_a.1.1.reg_b.1.1.value_vb.1.1.reg_c;
+
   step = scheduler();
-  write_ram = step[4];
-  write_a_or_va = step[0] + step[2];
-  write_b = step[1];
-  write_c = step[2];
-  write_vb = step[4];
+  
+  (* Autorisation pour l'écriture sur les registres *)
+  write_a_or_va = step[1] + step[4];
+  write_b = step[2];
+  write_c = step[3];
+  
+  (* Autorisation pour les demandes de lecture en RAM *)
+  read_a_or_b_or_c = step[0] + step[1] + step[2];
   read_va = step[3];
   read_vb = step[4];
-  read_a_or_b_or_c = step[0] + step[1] + step[4];
-  vb_minus_va = sub<s>(reg_b,reg_a);
-  leqz = leqz<s>(vb_minus_va);
+  
+  (* Autorisation pour l'écriture en RAM *)
+  write_ram = step[4];
+
   reg_a = write<s>(write_a_or_va,read_ram);
   reg_b = write<s>(write_b,read_ram);
-  reg_c = write<s>(write_c,read_ram);
-  reg_vb = write<s>(write_vb,read_ram);
+  reg_c = write<s>(write_c,read_ram);	
+  value_vb = read_ram;
+
+  vb_minus_va = sub<s>(value_vb,reg_a);
+  leqz = leqz<s>(vb_minus_va);
   write_addr = reg_b;
+  data = vb_minus_va;
+    
   pc = pc<s>(reg_c,leqz,step[4],read_a_or_b_or_c);
   read_addr_aux = muxn<s>(read_va,reg_a,pc);
   read_addr = muxn<s>(read_vb,reg_b,read_addr_aux);
-  data = vb_minus_va;
   (read_ram,output) = ram_module<s>(write_addr,read_addr,write_ram,data);
 end where
