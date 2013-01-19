@@ -1,8 +1,5 @@
-main() = (o:[s+2+s+2+8+2+s+2+s+2+s+2+s+1+s])
+main() = (output:[8*s])
 where
-	o =
-reg_a.1.1.value_vb.1.1.regwe.1.1.read_addr.1.1.vo.1.1.mem.1.1.read_ram.1.pc;
-
   step = scheduler();
   
   (* Autorisation pour l'écriture sur les registres *)
@@ -30,5 +27,5 @@ reg_a.1.1.value_vb.1.1.regwe.1.1.read_addr.1.1.vo.1.1.mem.1.1.read_ram.1.pc;
   pc = pc<s>(C,reg(leqz),step[0],read_a_or_b_or_c);
   read_addr_aux = muxn<s>(read_va,reg_a,pc);
   read_addr = muxn<s>(read_vb,reg_b,read_addr_aux);
-  (read_ram,output,vo,out,we,mem,regwe) = ram_module<s>(write_addr,read_addr,write_ram,data);
+  (read_ram,output) = ram_module<s>(write_addr,read_addr,write_ram,data);
 end where

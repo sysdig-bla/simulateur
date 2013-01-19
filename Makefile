@@ -8,4 +8,4 @@ watch:
 	cd sim2 ; make
 	cd subleq ; make ; ./subleq counter.sq
 	cd montre ; make ; ./mjc2.byte montre.mj
-	./sim2/netlist_sim2.byte -s 50 -v -m subleq/counter.mem montre/montre.net
+	./sim2/netlist_sim2.byte -s 100 -v -m subleq/counter.mem montre/montre.net
