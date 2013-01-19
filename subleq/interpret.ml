@@ -54,7 +54,7 @@ let interpret h l steps =
     else pc := !pc+3;
     if !pc > max_int-3
       then continue := false;
-    if steps < 10 || !s land 524287 = 0
+    if steps < 11 || !s land 524287 = 0
       then print ()
   done;
   Printf.fprintf h "## END OF SIMULATION ##\n"
