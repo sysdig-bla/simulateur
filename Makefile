@@ -27,6 +27,7 @@ clean:
 	cd sim2 ; make clean
 	cd subleq ; make clean
 	cd montre ; make clean
+	cd minijazz ; ocamlbuild -clean
 	rm -rf *\~ */*\~ */*/*\~
 
 archive: clean
