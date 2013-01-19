@@ -121,7 +121,7 @@ let sim c =
     if !debug_verbose then
       print_state std c
     else if !verbose then
-      Format.printf "STEP %d - %a@."
+      Format.printf "%3d - %a@."
         i print_raw o;
     if !seconds > 0. && elapsed()> !seconds
 	then exit 0
@@ -136,7 +136,7 @@ let sbs_sim p c =
       let o = step c a in
       if !screen then
 	Display.update o;
-      Format.printf "STEP %d - %a@."
+      Format.printf "%3d - %a@."
 	i print_raw o
    done
  	
@@ -152,7 +152,7 @@ let real_time cps c =
     if !screen then
         Display.update o;
     if !verbose then
-      Format.printf "STEP %d - %a@."
+      Format.printf "%3d - %a@."
       i print_raw o;
     let t = (float_of_int i)/.cps -. elapsed () in
     if t>0.05 then wait t
