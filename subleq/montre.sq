@@ -26,7 +26,7 @@ mtwo -7 ;
 
 ## CONSTANTS ##
 
-m4096:-4096
+m1024:-1024
 m2013:-2013
 
 m400:-400
@@ -74,8 +74,8 @@ p399:399
 tmp:0
 zero:0
 
-# 4096 Hz program
-cyclesleft:4096
+# 1024 Hz program
+cyclesleft:1024
 
 # do {
 start:
@@ -83,7 +83,7 @@ p10 cyclesleft main   ##
 0 0 start
 
 main:
-m4096 cyclesleft main ##
+m1024 cyclesleft main ##
 
 p35 cyclesleft ;      ##
 ### INCR SECONDS ###

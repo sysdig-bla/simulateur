@@ -130,7 +130,7 @@ let sim c =
     		then incr cycles_mod_print
     		else
     			begin
-      			Format.printf "%3d - %a@."
+      			Format.printf "%6d - %a@."
         		i print_raw o ;
         		cycles_mod_print := 1;
        		end
@@ -148,7 +148,7 @@ let sbs_sim p c =
       let o = step c a in
       if !screen then
 	Display.update o;
-      Format.printf "%3d - %a@."
+      Format.printf "%6d - %a@."
 	i print_raw o
    done
  	
@@ -169,7 +169,7 @@ let real_time cps c =
 	  	  if !screen then
        	 	Display.update o;
     		if !verbose then
-      		Format.printf "%3d - %a@."
+      		Format.printf "%6d - %a@."
       		i print_raw o;
       	cycles_mod_print := 1;
       end ;
