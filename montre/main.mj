@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-main() = (disp_dec7s:[28])
-=======
 main() = (disp_dec7s:[14*(5+2)])
->>>>>>> 58d790cf9e68bcf5fd058ffdca5397352b8af379
 where
   step = scheduler();
   

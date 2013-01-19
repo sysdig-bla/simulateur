@@ -111,6 +111,15 @@ where
     s = mux(b[3],1,t1) . mux(b[3],1,t2) . mux(b[2],d3,n) . mux(b[3],1,t3) .mux(b[3],1,t4) . mux(b[3],1,t5) . mux(b[3],1,t6) ;
 end where
 
+iterdec7<n>(i : [8*n]) = o:[14*n]
+where
+	if n = 0 then
+		o = []
+        else
+		o = iterdec7<n-1>(i[8..(8*n)-1]).Dec7(i[0..3]).Dec7(i[4..7])
+        end if
+end where
+
 add3 (i:[4]) = o:[4]
 where
     greater = (i[1] & (not i[0]) &  (i[2] + i[3])) + i[0];
@@ -128,7 +137,7 @@ end where
 
 bcd (i:[8]) = o:[8]
 where
-    b1 = add3(i[5].i[6].i[7].0);
+    b1 = add3(0.i[7].i[6].i[5]);
     b2 = add3(b1[1..3].i[4]);
     b3 = add3(b2[1..3].i[3]);
     b4 = add3(b3[1..3].i[2]);
@@ -137,6 +146,32 @@ where
     b7 = add3(b6[1..3].b4[0]);
     
     o = i[0].b5[3].b5[2].b5[1].b5[0].b7[3].b7[2].b7[1]
+end where
+
+bcd4 (i:[12]) = o:[16]
+where
+    b1 = add3(0.i[11].i[10].i[9]);
+    b2 = add3(b1[1..3].i[8]);
+    b3 = add3(b2[1..3].i[7]);
+    b4 = add3(b3[1..3].i[6]);
+    b5 = add3(b4[1..3].i[5]);
+    b6 = add3(b5[1..3].i[4]);
+    b7 = add3(b6[1..3].i[3]);
+    b8 = add3(b7[1..3].i[2]);
+    b9 = add3(b8[1..3].i[1]);
+    b10 = add3(0.b1[0].b2[0].b3[0]);
+    b11 = add3(b10[1..3].b4[0]);
+    b12 = add3(b11[1..3].b5[0]);
+    b13 = add3(b12[1..3].b6[0]);
+    b14 = add3(b13[1..3].b7[0]);
+    b15 = add3(b14[1..3].b8[0]);
+    b16 = add3(0.b10[0].b11[0].b12[0]);
+    b17 = add3(b16[1..3].b13[0]);
+    b18 = add3(b17[1..3].b14[0]);
+
+    o =
+     i[0].b9[3].b9[2].b9[1].b9[0].b15[3].b15[2].b15[1].
+     b15[0].b18[3].b18[2].b18[1].b18[0].b17[0].b16[0].0
 end where
 
 neqz<n>(a:[n]) = o where
@@ -262,7 +297,7 @@ where
   o = muxn<n>(vra,vo,mem);
 end where
 
-main() = (disp_dec7s:[28])
+main() = (disp_dec7s:[14*(5+2)])
 where
   step = scheduler();
   
@@ -288,15 +323,15 @@ where
   write_addr = reg_b;
   data = vb_minus_va;    
   
-  k = bcd(output[112..119]).bcd(output[120..127]);
-  kp = reverse<16>(k);
+
+  k = bcd4(output[32..43]).bcd(output[48..55]).bcd(output[64..71]).bcd(output[80..87]).bcd(output[96..103]).bcd(output[112..119]);
   disp_dec7s =
-Dec7(kp[8..11]).Dec7(kp[12..15]).
-Dec7(kp[0..3]).Dec7(kp[4..7]);
+ iterdec7<5>(k[16..(16+5*8-1)]).Dec7(k[0..3]).Dec7(k[4..7]).Dec7(k[8..11]).Dec7(k[12..15]);
 
   pc = pc<s>(C,reg(leqz),step[0],read_a_or_b_or_c);
   read_addr_aux = muxn<s>(read_va,reg_a,pc);
   read_addr = muxn<s>(read_vb,reg_b,read_addr_aux);
   (read_ram,output) = ram_module<s>(write_addr,read_addr,write_ram,data);
 end where
+
 
