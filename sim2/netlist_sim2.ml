@@ -132,7 +132,7 @@ let sim c =
     			begin
       			Format.printf "%3d - %a@."
         		i print_raw o ;
-        		cycles_mod_print := 0;
+        		cycles_mod_print := 1;
        		end
         end ;
 	if !seconds > 0. && elapsed()> !seconds
@@ -153,6 +153,7 @@ let sbs_sim p c =
    done
  	
 let real_time cps c =
+	let cycles_mod_print = ref 0 in
   let a = Array.make c.in_length false in
   let cps = float_of_int cps in
   let start = gtod () in
@@ -161,11 +162,17 @@ let real_time cps c =
       Display.open_display ();
   for i = 0 to !steps do
     let o = step c a in
-    if !screen then
-        Display.update o;
-    if !verbose then
-      Format.printf "%3d - %a@."
-      i print_raw o;
+		if !cycles_mod_print < !cycles_per_print
+		then incr cycles_mod_print
+	  else
+	  	begin
+	  	  if !screen then
+       	 	Display.update o;
+    		if !verbose then
+      		Format.printf "%3d - %a@."
+      		i print_raw o;
+      	cycles_mod_print := 1;
+      end ;
     let t = (float_of_int i)/.cps -. elapsed () in
     if t>0.05 then wait t
   done
