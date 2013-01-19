@@ -1,6 +1,7 @@
-main() = (o:[s+2+s+2+8+2+s+2+s+2+s+2+s])
+main() = (o:[s+2+s+2+8+2+s+2+s+2+s+2+s+1+s])
 where
-	o = reg_a.1.1.value_vb.1.1.regwe.1.1.read_addr.1.1.vo.1.1.mem.1.1.read_ram;
+	o =
+reg_a.1.1.value_vb.1.1.regwe.1.1.read_addr.1.1.vo.1.1.mem.1.1.read_ram.1.pc;
 
   step = scheduler();
   
