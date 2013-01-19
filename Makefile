@@ -6,6 +6,6 @@ montre.net:
 
 watch:
 	cd sim2 ; make
-	cd subleq ; make ; ./subleq montre.sq
+	cd subleq ; make ; ./subleq counter.sq
 	cd montre ; make ; ./mjc2.byte montre.mj
 	./sim2/netlist_sim2.byte -s 50 -v -m subleq/counter.mem montre/montre.net
