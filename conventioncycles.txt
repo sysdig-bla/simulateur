@@ -1,5 +1,6 @@
-1 On lit A, PC ++
-2 On lit B, PC ++
-3 On lit a l'adresse A
-4 On lit a l'adresse B, calculer B-A, comparaison a 0
-5 On lit C, PC++, bleq
+0 bleq, PC = (C ou PC), on demande A, PC++
+1 On demande B, PC++
+2 On demande l'adresse A
+3 On demande l'adresse B
+4 On demande C, PC++, calculer B-A, on demande a stocker B-A,
+    comparaison a 0 (on garde le res)

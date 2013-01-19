@@ -29,10 +29,10 @@ incr1<n>(x:[n]) = (o:[n],c) where
   end if
 end where
 
-pc<n>(C:[n],leqz,step5,read) = branch:[n] where
+pc<n>(C:[n],leqz,step3,read) = branch:[n] where
   (pc1,dummy) = incr1<n>(pc);
   pci = muxn<n>(read,pc1,pc);
-  branch = muxn<n>(leqz&step5,C,pci);
+  branch = muxn<n>(leqz&step3,C,pci);
   pc = regn<n>(branch)
 end where
 

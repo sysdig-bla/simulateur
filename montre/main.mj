@@ -10,9 +10,9 @@ reg_a.1.1.value_vb.1.1.regwe.1.1.read_addr.1.1.vo.1.1.mem.1.1.read_ram.1.pc;
   write_b = step[2];
   
   (* Autorisation pour les demandes de lecture en RAM *)
-  read_a_or_b_or_c = step[0] + step[1] + step[2];
-  read_va = step[3];
-  read_vb = step[4];
+  read_a_or_b_or_c = step[0] + step[1] + step[4];
+  read_va = step[2];
+  read_vb = step[3];
   
   (* Autorisation pour l'écriture en RAM *)
   write_ram = step[0];
