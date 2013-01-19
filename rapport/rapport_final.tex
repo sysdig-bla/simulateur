@@ -34,7 +34,7 @@
 
 \title{Microprocessor design}
 \author{Baptiste Lefebvre, Li-yao Xia, Antonin Delpeuch}
-\date{\today}
+\date{18 Janvier 2013}
 
 \maketitle
 
@@ -90,7 +90,7 @@ We wrote the program of our watch in the subleq assembly language.
 \begin{figure}
    \centering
     \begin{tikzpicture}[auto, node distance=1cm,>=latex']
-    
+ 
     \node[not] at (4cm,4cm) (n1) {};
     \node[reg, node distance=0.2cm, right=of n1] (r1) {st1};
     \node[not, node distance=0.2cm, right=of r1] (n2) {};
@@ -111,20 +111,44 @@ We wrote the program of our watch in the subleq assembly language.
     \draw[filb] (ctrl1.mid) -- (ctrl2.mid);
     \draw[fil] (ctrl2.mid) |- (n1);
 
-    \foreach \i in {0,1,2} {
-	\node[reg] at ($(0,-5)+3*(0.5+\i,0)$) (rn\i)  {};
-	\node[mux, below of=rn\i, node distance=1.5cm] (mn\i)
+	\node[reg] at ($(0,-5)+3*(0.5+0,0)$) (rn0)  {A};
+	\node[mux, below of=rn0, node distance=1.5cm] (mn0)
          {0\hspace{0.6cm}1};
-	\node[below left of=mn\i, node distance=1cm] (ctrlrop\i) {};
-	\node[below right of=mn\i, node distance=1.5cm] (ctrlroq\i) {};
-	\node[above left of=rn\i, node distance=1.5cm] (ctrlal\i) {};
-	\draw[fil] (mn\i) -- (rn\i);
-	\draw[fil] (ctrlrop\i.mid) -|  ($(mn\i)+(-0.4cm,-0.25cm)$);
-	\draw[filb] (ctrlrop\i.mid) -| (ctrlal\i.mid);
-	\draw[filb] (ctrlal\i.mid) -| (rn\i);
-	\draw[fil] (ctrlroq\i.mid) -| ($(mn\i)+(0.4cm,-0.25cm)$); 
-	}
-   
+	\node[below left of=mn0, node distance=1cm] (ctrlrop0) {};
+	\node[below right of=mn0, node distance=1.5cm] (ctrlroq0) {};
+	\node[above left of=rn0, node distance=1.5cm] (ctrlal0) {};
+	\draw[fil] (mn0) -- (rn0);
+	\draw[fil] (ctrlrop0.mid) -|  ($(mn0)+(-0.4cm,-0.25cm)$);
+	\draw[filb] (ctrlrop0.mid) -| (ctrlal0.mid);
+	\draw[filb] (ctrlal0.mid) -| (rn0);
+	\draw[fil] (ctrlroq0.mid) -| ($(mn0)+(0.4cm,-0.25cm)$); 
+
+
+   	\node[reg] at ($(0,-5)+3*(0.5+1,0)$) (rn1)  {B};
+	\node[mux, below of=rn1, node distance=1.5cm] (mn1)
+         {0\hspace{0.6cm}1};
+	\node[below left of=mn1, node distance=1cm] (ctrlrop1) {};
+	\node[below right of=mn1, node distance=1.5cm] (ctrlroq1) {};
+	\node[above left of=rn1, node distance=1.5cm] (ctrlal1) {};
+	\draw[fil] (mn1) -- (rn1);
+	\draw[fil] (ctrlrop1.mid) -|  ($(mn1)+(-0.4cm,-0.25cm)$);
+	\draw[filb] (ctrlrop1.mid) -| (ctrlal1.mid);
+	\draw[filb] (ctrlal1.mid) -| (rn1);
+	\draw[fil] (ctrlroq1.mid) -| ($(mn1)+(0.4cm,-0.25cm)$); 
+
+
+	\node[reg] at ($(0,-5)+3*(0.5+2,0)$) (rn2)  {VB};
+	\node[mux, below of=rn2, node distance=1.5cm] (mn2)
+         {0\hspace{0.6cm}1};
+	\node[below left of=mn2, node distance=1cm] (ctrlrop2) {};
+	\node[below right of=mn2, node distance=1.5cm] (ctrlroq2) {};
+	\node[above left of=rn2, node distance=1.5cm] (ctrlal2) {};
+	\draw[fil] (mn2) -- (rn2);
+	\draw[fil] (ctrlrop2.mid) -|  ($(mn2)+(-0.4cm,-0.25cm)$);
+	\draw[filb] (ctrlrop2.mid) -| (ctrlal2.mid);
+	\draw[filb] (ctrlal2.mid) -| (rn2);
+	\draw[fil] (ctrlroq2.mid) -| ($(mn2)+(0.4cm,-0.25cm)$); 
+
     \node at ($(ctrlroq2)+(4cm,0)$) (ctrlrr) {};
     \draw[filb] (ctrlroq2.mid) -- (ctrlrr.mid);
     \draw[filb] (ctrlroq0.mid) -- (ctrlroq1.mid) -- (ctrlroq2.mid);
@@ -151,7 +175,7 @@ We wrote the program of our watch in the subleq assembly language.
     \draw[fil] (pcrct.mid) |- (incr1);
     \draw[fil] (incr1) -| (pcl2ct.mid) |- ($(pcmux)+(-0.25cm,-0.4cm)$);
     
-    \node[operateur, node distance=2cm, below of=pcmux] (pcunion) {U};
+    \node[operateur, node distance=1.5cm, below of=pcmux] (pcunion) {U};
     \draw[filb] ($(pcunion)+(-0.5cm,-0.5cm)$) -- (pcunion) ++(-0.6cm,-0.7cm)
 node {st1};
     \draw[filb] ($(pcunion)+(0cm,-0.5cm)$) -- (pcunion) ++(0,-0.7cm)
@@ -181,6 +205,14 @@ node {st5};
     \draw[fil] (rn0) |- ++(4cm,3cm) |- ($(muxers)+(-1cm,0.7cm)$);
     \draw[fil] (rn1) |- ++(1.2cm,2.8cm) |- ($(muxers)+(-1cm,0.5cm)$);
     \draw[fil] (rn2) |- ++(-1.6cm,2.6cm) |- ($(muxers)+(-1cm,0.3cm)$);
+    \draw[fil] (pcreg) -| ++(2cm,2cm) |- ($(muxers)+(-1cm,0.9cm)$);
+
+    \node[operateur] at (-1cm,-5.2cm) (sub) {sub};
+    \node[operateur] at (-1cm,-3.4cm) (neg) {neg};
+    \draw[fil] (ctrlrr.mid) -| (sub);
+    \draw[fil] (sub) -- (neg);
+    \draw[fil] (ctrlrop0.mid) -| ($(sub)+(0.35,-0.35)$);
+    \draw[fil] (neg) -| (pcmuxi);
 
     \end{tikzpicture}
     \caption{Chip's architecture}

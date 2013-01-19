@@ -16,7 +16,6 @@ let display7 (pos_x, pos_y) values =
         if flip then
             Graphics.moveto dx (25+dy)
         else Graphics.moveto (25+dx) dy;
-        Graphics.draw_char (char_of_int (int_of_char '0' + i));
         if values.(i) then
             Graphics.fill_poly curr_poly
         else 
