@@ -44,7 +44,7 @@ where
 end where
 
 ram_module<n>(write_addr:[n], read_addr:[n], wen, data:[n]) =
-  (o:[n],out:[2^v*n])
+  (o:[n],out:[2^v*n],vo:[n],out:[2^v*n],we,mem:[n],regwe:[8])
 where
   wa = write_addr[..n-2];
   vwa = write_addr[n-1]; (* Virtual memory cells *)
@@ -57,8 +57,4 @@ where
   out = multiereg<2^v,n>(regwe,data);
   vo = multimux<v,n>(ra[..v-1],out);
   o = muxn<n>(vra,vo,mem);
-end where
-
-rrr(wa:[s],ra:[s],we,d:[s]) = (o:[s],out:[2^v*s]) where
-  (o,out) = ram_module<s>(wa,ra,we,d)
 end where
