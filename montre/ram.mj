@@ -46,19 +46,17 @@ end where
 ram_module<n>(write_addr:[n], read_addr:[n], wen, data:[n]) =
   (o:[n],out:[2^v*n])
 where
+  ra_reg = regn<n>(read_addr);
   wa = write_addr[..n-2];
   vwa = write_addr[n-1]; (* Virtual memory cells *)
-  ra = read_addr[..n-2];
-  vra = read_addr[n-1]; (* Virtual memory cells *)
+  ra = ra_reg[..n-2];
+  vra = ra_reg[n-1]; (* Virtual memory cells *)
   we = mux(vwa,0,wen);
   vwe = mux(vwa,wen,0);
-  mem = ram<n-1,n>(ra,we,wa,data);
+  mem = ram<n-1,n>(read_addr[..n-2],we,wa,data);
   regwe = multidemux<v,1>(wa[..v-1],vwe);
   out = multiereg<2^v,n>(regwe,data);
   vo = multimux<v,n>(ra[..v-1],out);
   o = muxn<n>(vra,vo,mem);
 end where
 
-rrr(wa:[s],ra:[s],we,d:[s]) = (o:[s],out:[2^v*s]) where
-  (o,out) = ram_module<s>(wa,ra,we,d)
-end where

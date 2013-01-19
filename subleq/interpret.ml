@@ -2,7 +2,7 @@ open Constants
 
 let t = Array.make mem_size 0
 
-let end_cells = 5 (* to be printed *)
+let end_cells = 8 (* to be printed *)
 
 exception Eof
 
@@ -25,6 +25,12 @@ let init l =
 let relative x =
   if x > max_int then x-mem_size else x
 
+let print h s pc a b c () =
+  Printf.fprintf h "%3d - pc=%3d - " s pc;
+  Printf.fprintf h "%3d %3d %3d : " (relative a) (relative b) (relative c);
+  print_cells h
+  
+
 let interpret h l steps =
   init l;
   let pc = ref 0 in
@@ -34,11 +40,10 @@ let interpret h l steps =
   print_cells h;
   while !continue && !s < steps do
     incr s;
-    Printf.fprintf h "%3d - pc=%3d - " !s !pc;
     let a = t.(!pc) in
     let b = t.(!pc+1) in
     let c = t.(!pc+2) in
-    Printf.fprintf h "%3d %3d %3d : " (relative a) (relative b) (relative c);
+    let print = print h !s !pc a b c in
     (* if c = b, then the cell is overwritten at the next cycle *)
     let diff = (t.(b)-t.(a)+mem_size) mod mem_size in
     t.(b) <- diff;
@@ -49,6 +54,7 @@ let interpret h l steps =
     else pc := !pc+3;
     if !pc > max_int-3
       then continue := false;
-    print_cells h;
+    if steps < 10 || !s land 524287 = 0
+      then print ()
   done;
   Printf.fprintf h "## END OF SIMULATION ##\n"

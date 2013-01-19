@@ -1,72 +1,228 @@
+# Subleq watch program
+# 5 clock ticks per instruction
+# Instructions padding to match second
+# Output cells
+# -1 SECONDS
+# -2 MINUTES
+# -3 HOURS
+# -4 DAY
+# -5 MONTH
+# -6 YEAR
+# -7 WEEKDAY
+# -8 special ???
+
 # Initialization
+
+m22 -4 ;
+mone -5 ;
+m2013 -6 ;
+mtwo -7 ;
 
 0 0 start
 
 # Memory map
 
-# CONSTANTS
-# 0 : 0 (null register)
+## CONSTANTS ##
+
+m2013:-2013
+
+m400:-400
+m100:-100
+
+m32:-32
+m31:-31
+m30:-30
+m29:-29
+
+m22:-22
+
+m4:-4
+
+mtwo:-2
+mone:-1
+one:1
+
+p3:3
+
+seven:7
+twelve:12
+
+p23:23
+p59:59
+
+p100:100
+p399:399
+
+
+## Variables ##
+
+# zero and tmp are temporaries
 tmp:0
 zero:0
-mone:-1
-fiftynine:59
-twentythree:23
-
-# Variables
 
 # do {
 start:
-tmp tmp ;
 
-# incr seconds 
+### INCR SECONDS ###
+tmp tmp ;
+zero zero ;
 mone -1 ;
 # zero = - seconds
 -1 zero ;
 # tmp = - zero = seconds
 zero tmp ;
-# Reset zero
-zero zero ;
 # if tmp <= 59, goto start
-fiftynine tmp start
+p59 tmp start
 
-# reset tmp
-tmp tmp ;
 # reset seconds
 -1 -1 ;
 
-# incr minutes
+### INCR MINUTES ###
+tmp tmp ;
+zero zero ;
 mone -2 ;
 # zero = - minutes
 -2 zero ;
 # tmp = - zero = minutes
 zero tmp ;
-# Reset zero
-zero zero ;
 # if tmp <= 59, goto start
-fiftynine tmp start
+p59 tmp start
 
-# reset tmp
-tmp tmp ;
 # reset minutes
 -2 -2 ;
 
-# incr hours 
+### INCR HOURS ###
+tmp tmp ;
+zero zero ;
 mone -3 ;
 # zero = - hours
 -3 zero ;
 # tmp = - zero = hours
 zero tmp ;
-# Reset zero
-zero zero ;
 # if tmp <= 23, goto start
-twentythree tmp start
+p23 tmp start
 
-# reset tmp
-tmp tmp ;
 # reset hours
 -3 -3 ;
 
+## INCR WEEKDAYS ##
+tmp tmp ;
+zero zero ;
+mone -7 ;
+# zero = - weekdays
+-7 zero ;
+# tmp = - zero = weekdays
+zero tmp ;
 
+# if tmp <= 7
+seven tmp newday
+
+-7 -7 ;
+
+newday:
+### INCR DAYS ###
+tmp tmp ;
+zero zero ;
+mone -4 ;
+
+twelve tmp ;
+
+# check current month
+# December ?
+tmp zero ;
+-5 zero ttyonedays
+# November ?
+one zero trtydays
+# October ?
+one zero ttyonedays
+# September ?
+one zero trtydays
+# August ?
+one zero ttyonedays
+# July ?
+one zero ttyonedays
+# June ?
+one zero trtydays
+# May ?
+one zero ttyonedays
+# April ?
+one zero trtydays
+# March ?
+one zero ttyonedays
+# February ?
+one zero february
+# January ?
+zero zero ttyonedays
+
+february:
+zero zero ;
+-6 zero ;
+# Is the year congruent to 400 ?
+loop400:
+m400 zero loop400
+p399 zero loop100
+zero zero ttyeightdays
+# to 100 ?
+loop100:
+m100 zero loop100
+one zero ttyeightdays
+p100 zero ;
+# to 4 ?
+loop4:
+m4 zero loop4
+p3 zero ttyeightdays
+zero zero ttyninedays
+
+ttyeightdays:
+m29 zero ;
+0 0 zrdays
+
+ttyninedays:
+m30 zero ;
+0 0 zrdays
+
+trtydays:
+m31 zero ;
+0 0 zrdays
+
+ttyonedays:
+m32 zero ;
+0 0 zrdays
+
+zrdays:
+# if days >= value stored in zero then incr month
+-4 zero newmonth
+0 0 start
+
+newmonth:
+-4 -4 ;
+mone -4 ;
+
+### INCR MONTHS ###
+tmp tmp ;
+zero zero ;
+mone -5 ;
+# zero = - months
+-5 zero ;
+# tmp = - zero = months
+zero tmp ;
+# if tmp <= 12, goto start
+twelve tmp start
+
+# reset months
+-5 -5 ;
+mone -5 ;
+
+### INCR YEARS ###
+tmp tmp ;
+zero zero ;
+mone -6 ;
+# zero = - years
+-6 zero ;
+# tmp = - zero = years
+zero tmp ;
 
 # jump to start 
 zero zero start
+
+# }
