@@ -7,13 +7,10 @@
 \usepackage{graphicx}
 \usepackage{amsthm}
 \usepackage{amsmath}
-\usetheme{Pittsburgh}
-\usecolortheme{seagull}
+\usetheme{Frankfurt}
 \usepackage{mathtools}
-\usepackage{stmaryrd}
-\usepackage{minted}
+\usepackage{listings}
 \usepackage{tikz}
-\usepackage{subfigure}
 \usetikzlibrary{arrows,decorations.pathmorphing,backgrounds,positioning}
 
 \beamertemplatenavigationsymbolsempty
@@ -29,9 +26,18 @@
 
 \title{A Watch Using Subleq}
 \author{Baptiste Lefebvre, Li-yao Xia, Antonin Delpeuch}
-\date{2013/01/22 15:55}
+\date{2013/01/22 15 : 55}
 
+\begin{frame}
+    \maketitle
+\end{frame}
+
+\begin{frame}
+    \frametitle{Outline}
+    \tableofcontents
+\end{frame}
 \section{The \texttt{subleq} language}
+\subsection{Motivation}
 
 \begin{frame}
     \frametitle{Motivation}
@@ -39,19 +45,57 @@
     \begin{itemize}
         \item We discovered the MIPS architecture in compilation course.
         \item We wanted to design an original processor.
-        \item We focused on environments in wich the number of gates must be reduced as much as possible.
+        \item We focused on environments in wich the number of gates must be kept small.
     \end{itemize}
+
+\end{frame}
+
+\subsection{Definition}
+\begin{frame}[fragile]
+    \frametitle{\texttt{subleq}}
+
+    The instruction set is made of only one instruction :
+
+    \texttt{subleq a b c}, which means :
+
+\begin{lstlisting}
+  b := b - a;
+  if b > 0 then
+    go to the next instruction
+  else go to c
+\end{lstlisting}
+
 
 \end{frame}
 
 
 \section{Chip architecture}
+\subsection{The cycle}
+
+\begin{frame}
+    \frametitle{The cycle}
+ae
+\end{frame}
+
+\subsection{Outline of the chip}
+\begin{frame}
+    \frametitle{Outline}
+ei
+\end{frame}
 
 \section{Implementation details}
 
 \subsection{Memory management}
 
+\begin{frame}
+e
+\end{frame}
+
 \subsection{7-segments output}
+
+\begin{frame}
+ae
+\end{frame}
 
 
 \end{document}
