@@ -71,16 +71,17 @@
 \begin{frame}
     \frametitle{Motivation}
     \begin{itemize}
-        \item We discovered the MIPS architecture in compilation course.
-        \item We wanted to design an original processor.
-        \item We tried to keep the number of boolean gates small.
+        \item We already discovered the MIPS architecture
+          in the compilation course.
+        \item Design an original processor.
+        \item Keep the number of boolean gates small.
+        \item \texttt{Subleq} is a lot of fun to write !
     \end{itemize}
 \end{frame}
 
 \subsection{Definition}
 \begin{frame}[fragile]
     \frametitle{\texttt{Subleq}}
-
     The instruction set is made of only one instruction written as 3
     integers :
     \\[11pt]
@@ -97,6 +98,17 @@
 
 \end{frame}
 
+\begin{frame}
+  \frametitle{\texttt{Subleq}}
+  \begin{itemize}
+    \item Subleq code is a sequence of integers, which initialize
+      a contiguous memory block starting from address 0.
+    \item A program counter initialized at 0 points to the next
+      instruction to execute.
+    \item Data and instructions in the same place.
+  \end{itemize}
+\end{frame}
+
 \subsection{Examples}
 \begin{frame}[fragile]{Examples}
   \begin{verbatim}
@@ -107,7 +119,7 @@
     3  4  5  10 -9   8  3  0  -1
     ...
   \end{verbatim}
-  The code does not need to be aligned.
+  An instruction does not need to be aligned.
 \end{frame}
 
 \begin{frame}[fragile]
@@ -279,9 +291,9 @@ from the desired truth table.
 \end{frame}
 
 \begin{frame}
-    \frametitle{Implementation}
+  \frametitle{Implementation}
 
-    \input{double-dabble}
+  \input{double-dabble}
 
 \end{frame}
 
