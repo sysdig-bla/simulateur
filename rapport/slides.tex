@@ -1,4 +1,4 @@
-\documentclass[slidestop]{beamer}
+\documentclass{beamer}
 \usepackage[utf8]{inputenc}
 \usepackage[francais]{babel}
 \usepackage{bbm}
@@ -7,15 +7,14 @@
 \usepackage{graphicx}
 \usepackage{amsthm}
 \usepackage{amsmath}
-\usetheme{Boadilla}
+\usetheme{default}
 \usecolortheme{seahorse}
 \usepackage{mathtools}
-\usepackage{listings}
 \usepackage{tikz}
 \usetikzlibrary{arrows,automata,calc,decorations.pathmorphing,backgrounds,positioning}
 
-\beamertemplatenavigationsymbolsempty
-\setbeamertemplate{navigation symbols}{} 
+%\beamertemplatenavigationsymbolsempty
+%\setbeamertemplate{navigation symbols}{} 
 
 \usepackage[T1]{fontenc}
 
@@ -42,13 +41,11 @@
 
 \begin{frame}
     \frametitle{Motivation}
-
     \begin{itemize}
         \item We discovered the MIPS architecture in compilation course.
         \item We wanted to design an original processor.
-        \item We focused on environments in wich the number of gates must be kept small.
+        \item We tried to keep the number of boolean gates small.
     \end{itemize}
-
 \end{frame}
 
 \subsection{Definition}
@@ -58,37 +55,40 @@
     The instruction set is made of only one instruction written as 3
     integers :
     \\[11pt]
-    \begin{lstlisting}
+    \begin{verbatim}
       a b c
-    \end{lstlisting}
+    \end{verbatim}
     which means :
 
-    \begin{lstlisting}
+    \begin{verbatim}
       b <- *b - *a
       if b <= 0 then go to c
       else go to next instruction
-    \end{lstlisting}
+    \end{verbatim}
 
 \end{frame}
 
 \subsection{Examples}
 \begin{frame}[fragile]{Examples}
   \begin{verbatim}
-    3  4  6   8  8  -1   5  3  0
-    3  4  6   8  0  -1   5  3  0
-    3  4  6   9  0  -1   5  3  0
-    3  4  6   9 -9  -1   5  3  0
-    3  4  6  10 -9  -1   5  3  0
+    3  4  5   8  8   8  3  0  -1     PC : 0
+    3  4  5   8  0   8  3  0  -1     PC : 6
+    3  4  5   9  0   8  3  0  -1     PC : 0
+    3  4  5   9 -9   8  3  0  -1     ...
+    3  4  5  10 -9   8  3  0  -1
+    ...
   \end{verbatim}
+  The code does not need to be aligned.
 \end{frame}
 
 \begin{frame}[fragile]
     \frametitle{Examples}
+Syntactic sugar : Labels, semi-colon (address of the following cell).
 Common instructions can be written with \texttt{subleq}, for instance :
 
 \begin{columns}[t]
     \begin{column}[T]{5cm}
-\begin{lstlisting}
+\begin{verbatim}
 move a b :
   a Z ;
   b b ;
@@ -101,10 +101,10 @@ add a b c :
   a a ;
   Z a ;
   Z Z ;
-\end{lstlisting}
+\end{verbatim}
     \end{column}
 \begin{column}[T]{5cm}
-\begin{lstlisting}
+\begin{verbatim}
 beqz a lbl :
    Z a L1
    Z Z L3
@@ -117,7 +117,7 @@ L3:
 
 j lbl :
    Z Z lbl
-\end{lstlisting}
+\end{verbatim}
 \end{column}
 \end{columns}
 \end{frame}
@@ -131,45 +131,43 @@ j lbl :
     \begin{columns}[t]
         \begin{column}[T]{5cm}
     \begin{enumerate}
-            \setcounter{enumi}{-1}
-
         \item \textbf{Step 1}
-            \begin{lstlisting}
+            \begin{verbatim}
  Store A,
  Read address : B,
  Increment PC
-            \end{lstlisting}
+            \end{verbatim}
         \item \textbf{Step 2}
-            \begin{lstlisting}
+            \begin{verbatim}
  Store B,
  Read address : VA
-            \end{lstlisting}
+            \end{verbatim}
 
         \item \textbf{Step 3}
-            \begin{lstlisting}
+            \begin{verbatim}
  Store VA in A,
  Read address : VB
-            \end{lstlisting}
+            \end{verbatim}
 
     \end{enumerate}
 \end{column}
 \begin{column}[T]{5cm}
     \begin{enumerate}
-        \setcounter{enumi}{1}
+        \setcounter{enumi}{3}
         \item \textbf{Step 4}
-            \begin{lstlisting}
+            \begin{verbatim}
  Store VB,
- Read address : C,
+ Read address : C
  Increment PC
-            \end{lstlisting}
+            \end{verbatim}
 
         \item \textbf{Step 5}
-            \begin{lstlisting}
+            \begin{verbatim}
  If VB - VA <= 0
    then set PC to C,
  Read address : A at PC,
  Increment PC
-             \end{lstlisting}
+             \end{verbatim}
     \end{enumerate}
 \end{column}
 \end{columns}
