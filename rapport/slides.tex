@@ -20,6 +20,8 @@
 
 
 \hypersetup{pdfstartview={FitH}}
+
+
 \begin{document}
 
 \makeatletter
@@ -33,10 +35,11 @@
 \end{frame}
 
 \begin{frame}
-    \frametitle{Outline}
+    \frametitle{Layout}
     \tableofcontents
 \end{frame}
-\section{The \texttt{subleq} language}
+
+\section{The \texttt{Subleq} language}
 \subsection{Motivation}
 
 \begin{frame}
@@ -50,7 +53,7 @@
 
 \subsection{Definition}
 \begin{frame}[fragile]
-    \frametitle{\texttt{subleq}}
+    \frametitle{\texttt{Subleq}}
 
     The instruction set is made of only one instruction written as 3
     integers :
@@ -87,7 +90,7 @@ Syntactic sugar : Labels, semi-colon (address of the following cell).
 Common instructions can be written with \texttt{subleq}, for instance :
 
 \begin{columns}[t]
-    \begin{column}[T]{5cm}
+    \begin{column}[T]{3cm}
 \begin{verbatim}
 move a b :
   a Z ;
@@ -103,7 +106,7 @@ add a b c :
   Z Z ;
 \end{verbatim}
     \end{column}
-\begin{column}[T]{5cm}
+\begin{column}[T]{3cm}
 \begin{verbatim}
 beqz a lbl :
    Z a L1
@@ -123,60 +126,57 @@ j lbl :
 \end{frame}
 
 \section{Chip architecture}
-\subsection{The cycle}
+\subsection{Cycle}
 
 \begin{frame}[fragile]
     \frametitle{The cycle}
-
-    \begin{columns}[t]
-        \begin{column}[T]{5cm}
+\begin{columns}[t]
+	\begin{column}[T]{4cm}
     \begin{enumerate}
-        \item \textbf{Step 1}
-            \begin{verbatim}
- Store A,
- Read address : B,
- Increment PC
-            \end{verbatim}
-        \item \textbf{Step 2}
-            \begin{verbatim}
- Store B,
- Read address : VA
-            \end{verbatim}
-
-        \item \textbf{Step 3}
-            \begin{verbatim}
- Store VA in A,
- Read address : VB
-            \end{verbatim}
-
-    \end{enumerate}
-\end{column}
-\begin{column}[T]{5cm}
-    \begin{enumerate}
-        \setcounter{enumi}{3}
-        \item \textbf{Step 4}
-            \begin{verbatim}
- Store VB,
- Read address : C
- Increment PC
-            \end{verbatim}
-
-        \item \textbf{Step 5}
-            \begin{verbatim}
- If VB - VA <= 0
-   then set PC to C,
- Read address : A at PC,
- Increment PC
-             \end{verbatim}
-    \end{enumerate}
-\end{column}
+      \setcounter{enumi}{0}
+        \item
+          \begin{verbatim}
+Store A
+Read address : B
+Increment PC
+          \end{verbatim}
+        \item
+          \begin{verbatim}
+Store B
+Read address : VA
+          \end{verbatim}
+        \item
+	        \begin{verbatim}
+Store VA in A
+Read address : VB
+          \end{verbatim}
+  	\end{enumerate}
+	\end{column}
+	\begin{column}[T]{6cm}
+  	\begin{enumerate}
+  	  \setcounter{enumi}{3}
+  	    \item
+  	      \begin{verbatim}
+Store VB
+Read address : C
+Increment PC
+  	      \end{verbatim}
+  	    \item 
+  	      \begin{verbatim}
+If VB - VA <= 0
+  then set PC to C
+Read address : A at PC
+Increment PC
+  	      \end{verbatim}
+  	\end{enumerate}
+	\end{column}
 \end{columns}
 
 \end{frame}
 
-\subsection{Outline of the chip}
+\subsection{Chip layout}
 \begin{frame}
-    \frametitle{Outline}
+    \frametitle{Layout}
     \centering
     \input{schema2}
 \end{frame}
@@ -189,11 +189,11 @@ j lbl :
 e
 \end{frame}
 
-\subsection{7-segments output}
+\subsection{7-segments display}
 
 \begin{frame}
-\frametitle{7-segments output}
-The conversion from binary values to 7-segments output is built in the chip, in two steps :
+\frametitle{7-segments display}
+The conversion from binary values to 7-segments display is built in the chip, in two steps :
 \begin{enumerate}
     \item Binary $\rightarrow$ Binary Coded Decimal (BCD)
         
