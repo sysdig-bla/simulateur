@@ -72,6 +72,16 @@
 \end{frame}
 
 \subsection{Examples}
+\begin{frame}[fragile]{Examples}
+  \begin{verbatim}
+    3  4  6   8  8  -1   5  3  0
+    3  4  6   8  0  -1   5  3  0
+    3  4  6   9  0  -1   5  3  0
+    3  4  6   9 -9  -1   5  3  0
+    3  4  6  10 -9  -1   5  3  0
+  \end{verbatim}
+\end{frame}
+
 \begin{frame}[fragile]
     \frametitle{Examples}
 Common instructions can be written with \texttt{subleq}, for instance :
@@ -126,19 +136,19 @@ j lbl :
         \item \textbf{Step 1}
             \begin{lstlisting}
  Store A,
- Ask for B,
+ Read address : B,
  Increment PC
             \end{lstlisting}
         \item \textbf{Step 2}
             \begin{lstlisting}
  Store B,
- Ask for VA
+ Read address : VA
             \end{lstlisting}
 
         \item \textbf{Step 3}
             \begin{lstlisting}
  Store VA in A,
- Ask for VB
+ Read address : VB
             \end{lstlisting}
 
     \end{enumerate}
@@ -149,7 +159,7 @@ j lbl :
         \item \textbf{Step 4}
             \begin{lstlisting}
  Store VB,
- Ask for C,
+ Read address : C,
  Increment PC
             \end{lstlisting}
 
@@ -157,7 +167,7 @@ j lbl :
             \begin{lstlisting}
  If VB - VA <= 0
    then set PC to C,
- Ask for A at PC,
+ Read address : A at PC,
  Increment PC
              \end{lstlisting}
     \end{enumerate}
