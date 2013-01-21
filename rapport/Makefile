@@ -1,5 +1,5 @@
 
 
 all:
-	pdflatex rapport_final.tex
+	pdflatex slides.tex
 

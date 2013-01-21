@@ -11,7 +11,7 @@
 \usepackage{mathtools}
 \usepackage{listings}
 \usepackage{tikz}
-\usetikzlibrary{arrows,decorations.pathmorphing,backgrounds,positioning}
+\usetikzlibrary{arrows,automata,calc,decorations.pathmorphing,backgrounds,positioning}
 
 \beamertemplatenavigationsymbolsempty
 \setbeamertemplate{navigation symbols}{} 
@@ -65,22 +65,71 @@
   else go to c
 \end{lstlisting}
 
-
 \end{frame}
 
+\subsection{Examples}
+\begin{frame}[fragile]
+    \frametitle{Examples}
+The usual instructions can be written with \texttt{subleq}, for instance :
+
+\begin{columns}[t]
+    \begin{column}[T]{5cm}
+\begin{lstlisting}
+move a b :
+  subleq a Z ;
+  subleq b b ;
+  subleq Z b ;
+  subleq Z Z ;
+
+\end{lstlisting}
+    \end{column}
+    \begin{column}[T]{5cm}
+\begin{lstlisting}
+add a b c :
+  subleq c Z ;
+  subleq b Z ;
+  subleq a a ;
+  subleq Z a ;
+  subleq Z Z ;
+\end{lstlisting}
+\end{column}
+\end{columns}
+
+\begin{columns}[t]
+\begin{column}[T]{5cm}
+\begin{lstlisting}
+beqz a lbl :
+   subleq Z a L1
+   subleq Z Z L3
+L1:
+   subleq a Z L2
+   subleq Z Z L3
+L2:
+   subleq Z Z lbl
+L3:
+\end{lstlisting}
+\end{column}
+\begin{column}[T]{5cm}
+\begin{lstlisting}
+j lbl :
+   subleq Z Z lbl
+\end{lstlisting}
+\end{column}
+\end{columns}
+\end{frame}
 
 \section{Chip architecture}
 \subsection{The cycle}
 
 \begin{frame}
     \frametitle{The cycle}
-ae
+description of the 5 steps
 \end{frame}
 
 \subsection{Outline of the chip}
 \begin{frame}
     \frametitle{Outline}
-ei
+    \input{schema}
 \end{frame}
 
 \section{Implementation details}
