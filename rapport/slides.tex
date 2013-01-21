@@ -12,6 +12,7 @@
 \usecolortheme{seahorse}
 \usepackage{mathtools}
 \usepackage{tikz}
+\usepackage{alltt}
 \usetikzlibrary{arrows,automata,calc,decorations.pathmorphing,backgrounds,positioning}
 
 %\beamertemplatenavigationsymbolsempty
@@ -90,11 +91,12 @@
     \end{verbatim}
     which means :
 
-    \begin{verbatim}
-      b <- *b - *a
-      \textbf{if} b <= 0 then go to c
-      else go to next instruction
-    \end{verbatim}
+    \begin{alltt}
+       b \(\leftarrow\) *b - *a
+      {\bf if} b \(\leq\) 0
+      {\bf then} go to c
+      {\bf else} go to next instruction
+    \end{alltt}
 
 \end{frame}
 
@@ -129,36 +131,36 @@ Common instructions can be written with \texttt{subleq}, for instance :
 
 \begin{columns}[t]
     \begin{column}[T]{3cm}
-\begin{verbatim}
-move a b :
-  a Z ;
-  b b ;
-  Z b ;
-  Z Z ;
+\begin{alltt}
+{\bf move} a b :
+   a Z ;
+   b b ;
+   Z b ;
+   Z Z ;
 
-add a b c :
-  c Z ;
-  b Z ;
-  a a ;
-  Z a ;
-  Z Z ;
-\end{verbatim}
+{\bf add} a b c :
+   c Z ;
+   b Z ;
+   a a ;
+   Z a ;
+   Z Z ;
+\end{alltt}
     \end{column}
 \begin{column}[T]{3cm}
-\begin{verbatim}
-beqz a lbl :
-   Z a L1
-   Z Z L3
-L1:
-   a Z L2
-   Z Z L3
-L2:
-   Z Z lbl
-L3:
+\begin{alltt}
+{\bf beqz} a lbl :
+   	Z a L1
+   	Z Z L3
+ L1:
+    a Z L2
+    Z Z L3
+ L2:
+    Z Z lbl
+ L3:
 
-j lbl :
-   Z Z lbl
-\end{verbatim}
+{\bf j} lbl :
+    Z Z lbl
+\end{alltt}
 \end{column}
 \end{columns}
 \end{frame}
@@ -221,11 +223,13 @@ Increment PC
 
 \section{Implementation details}
 
+
 \subsection{Memory management}
 
 \begin{frame}
-    \frametitle{Memory controller}
-e
+	\frametitle{Memory management}
+	\centering
+	\input{schema3}
 \end{frame}
 
 \subsection{7-segments display}
@@ -295,6 +299,25 @@ from the desired truth table.
 
   \input{double-dabble}
 
+\end{frame}
+
+
+\begin{frame}[fragile]
+    \frametitle{Time management}
+
+    As the number of instructions executed per second is constant, our watch program has to sleep by itself until
+    the next second.
+
+    \begin{verbatim}
+...
+p40 cyclesleft ;  ##
+# reset minutes
+-2 -2 ;
+...
+    \end{verbatim}
+
+    This is achieved by adding some instructions to count the number of instructions executed during the computation.
+    Then the program loops until the right number of instructions is reached.
 \end{frame}
 
 
