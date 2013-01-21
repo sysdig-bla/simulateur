@@ -188,7 +188,16 @@ e
 \subsection{7-segments output}
 
 \begin{frame}
-ae
+\frametitle{7-segments output}
+The conversion from binary values to 7-segments output is built in the chip, in two steps :
+\begin{enumerate}
+    \item Binary $\rightarrow$ Binary Coded Decimal (BCD)
+        
+          \texttt{101010} $\rightarrow$ \texttt{0100}.\texttt{0010}
+    \item BCD $\rightarrow$ 7-segments
+
+        \texttt{0100}.\texttt{0010} $\rightarrow$ \texttt{1100110}.\texttt{0111011}
+\end{enumerate}
 \end{frame}
 
 
