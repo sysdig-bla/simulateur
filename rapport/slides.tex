@@ -286,5 +286,24 @@ from the desired truth table.
 \end{frame}
 
 
+\begin{frame}[fragile]
+    \frametitle{Time management}
+
+    As the number of instructions executed per second is constant, our watch program has to sleep by itself until
+    the next second.
+
+    \begin{verbatim}
+...
+p40 cyclesleft ;  ##
+# reset minutes
+-2 -2 ;
+...
+    \end{verbatim}
+
+    This is achieved by adding some instructions to count the number of instructions executed during the computation.
+    Then the program loops until the right number of instructions is reached.
+\end{frame}
+
+
 \end{document}
 
