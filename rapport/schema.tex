@@ -20,7 +20,7 @@
 \tikzstyle{exterieur} = [dashed, draw]
 \tikzstyle{hypot} = [dashed]
 
-    \begin{tikzpicture}[auto, node distance=1cm,>=latex']
+\begin{tikzpicture}[auto, node distance=1cm,>=latex', scale = 0.6, every node/.style={transform shape}]
  
     \node[not] at (4cm,4cm) (n1) {};
     \node[reg, node distance=0.2cm, right=of n1] (r1) {st1};
@@ -47,7 +47,7 @@
          {0\hspace{0.6cm}1};
 	\node[below left of=mn0, node distance=1cm] (ctrlrop0) {};
 	\node[below right of=mn0, node distance=1.5cm] (ctrlroq0) {};
-	\node[above left of=rn0, node distance=1.5cm] (ctrlal0) {};
+    \node at ($(rn0)+(-1cm,0.6cm)$) (ctrlal0) {};
 	\draw[fil] (mn0) -- (rn0);
 	\draw[fil] (ctrlrop0.mid) -|  ($(mn0)+(-0.4cm,-0.25cm)$);
 	\draw[filb] (ctrlrop0.mid) -| (ctrlal0.mid);
@@ -60,7 +60,7 @@
          {0\hspace{0.6cm}1};
 	\node[below left of=mn1, node distance=1cm] (ctrlrop1) {};
 	\node[below right of=mn1, node distance=1.5cm] (ctrlroq1) {};
-	\node[above left of=rn1, node distance=1.5cm] (ctrlal1) {};
+	\node at ($(rn1)+(-1cm,0.6cm)$) (ctrlal1) {};
 	\draw[fil] (mn1) -- (rn1);
 	\draw[fil] (ctrlrop1.mid) -|  ($(mn1)+(-0.4cm,-0.25cm)$);
 	\draw[filb] (ctrlrop1.mid) -| (ctrlal1.mid);
@@ -73,7 +73,7 @@
          {0\hspace{0.6cm}1};
 	\node[below left of=mn2, node distance=1cm] (ctrlrop2) {};
 	\node[below right of=mn2, node distance=1.5cm] (ctrlroq2) {};
-	\node[above left of=rn2, node distance=1.5cm] (ctrlal2) {};
+	\node at ($(rn2)+(-1cm,0.6cm)$)  (ctrlal2) {};
 	\draw[fil] (mn2) -- (rn2);
 	\draw[fil] (ctrlrop2.mid) -|  ($(mn2)+(-0.4cm,-0.25cm)$);
 	\draw[filb] (ctrlrop2.mid) -| (ctrlal2.mid);
@@ -133,15 +133,17 @@ node {st5};
     \draw[filb] ($(muxers)+(1cm,-0.6cm)$) -- ($(rammod)+(-1cm,1.4cm)$)
          ++(-0.9cm,0.15cm) node {data};
 
-    \draw[fil] (rn0) |- ++(4cm,3cm) |- ($(muxers)+(-1cm,0.7cm)$);
-    \draw[fil] (rn1) |- ++(1.2cm,2.8cm) |- ($(muxers)+(-1cm,0.5cm)$);
-    \draw[fil] (rn2) |- ++(-1.6cm,2.6cm) |- ($(muxers)+(-1cm,0.3cm)$);
+    \draw[fil] (rn0) |- ++(4cm,1.5cm) |- ($(muxers)+(-1cm,0.5cm)$);
+    \draw[fil] (rn1) |- ++(1.2cm,1.3cm) |- ($(muxers)+(-1cm,0.3cm)$);
+    \draw[fil] (rn2) |- ++(-1.6cm,1.1cm) |- ($(muxers)+(-1cm,0.1cm)$);
     \draw[fil] (pcreg) -| ++(2cm,2cm) |- ($(muxers)+(-1cm,0.9cm)$);
 
     \node[operateur] at (-1cm,-5.2cm) (sub) {sub};
-    \node[operateur] at (-1cm,-3.4cm) (neg) {neg};
+    \node[operateur] at (-1cm,-3.2cm) (neg) {neg};
     \draw[fil] (ctrlrr.mid) -| (sub);
     \draw[fil] (sub) -- (neg);
+    \draw[filb] (sub) -| ++(1cm,1.5cm) -| ++(1.3cm,0.4cm) -- ++(4cm,0);
+    \draw[fil] ($(sub)+(6.3cm,1.9cm)$) |- ($(muxers)+(-1cm,0.7cm)$);
     \draw[fil] (ctrlrop0.mid) -| ($(sub)+(0.35,-0.35)$);
     \draw[fil] (neg) -| (pcmuxi);
 

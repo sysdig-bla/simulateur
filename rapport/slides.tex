@@ -121,9 +121,54 @@ j lbl :
 \section{Chip architecture}
 \subsection{The cycle}
 
-\begin{frame}
+\begin{frame}[fragile]
     \frametitle{The cycle}
-description of the 5 steps
+
+    \begin{columns}[t]
+        \begin{column}[T]{5cm}
+    \begin{enumerate}
+            \setcounter{enumi}{-1}
+        \item \textbf{Step 0}
+            \begin{lstlisting}
+ If VB - VA <= 0
+   then set PC to C,
+ Ask for A at PC,
+ Increment PC
+             \end{lstlisting}
+
+        \item \textbf{Step 1}
+            \begin{lstlisting}
+ Store A,
+ Ask for B,
+ Increment PC
+            \end{lstlisting}
+    \end{enumerate}
+\end{column}
+\begin{column}[T]{5cm}
+    \begin{enumerate}
+        \setcounter{enumi}{1}
+        \item \textbf{Step 2}
+            \begin{lstlisting}
+ Store B,
+ Ask for VA
+            \end{lstlisting}
+
+        \item \textbf{Step 3}
+            \begin{lstlisting}
+ Store VA in A,
+ Ask for VB
+            \end{lstlisting}
+
+        \item \textbf{Step 4}
+            \begin{lstlisting}
+ Store VB,
+ Ask for C,
+ Increment PC
+            \end{lstlisting}
+    \end{enumerate}
+\end{column}
+\end{columns}
+
 \end{frame}
 
 \subsection{Outline of the chip}
