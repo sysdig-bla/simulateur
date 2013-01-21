@@ -10,12 +10,11 @@
 \usetheme{default}
 \usecolortheme{seahorse}
 \usepackage{mathtools}
-\usepackage{listings}
 \usepackage{tikz}
 \usetikzlibrary{arrows,automata,calc,decorations.pathmorphing,backgrounds,positioning}
 
-\beamertemplatenavigationsymbolsempty
-\setbeamertemplate{navigation symbols}{} 
+%\beamertemplatenavigationsymbolsempty
+%\setbeamertemplate{navigation symbols}{} 
 
 \usepackage[T1]{fontenc}
 
@@ -36,7 +35,7 @@
 \end{frame}
 
 \begin{frame}
-    \frametitle{Outline}
+    \frametitle{Layout}
     \tableofcontents
 \end{frame}
 
@@ -45,13 +44,11 @@
 
 \begin{frame}
     \frametitle{Motivation}
-
     \begin{itemize}
         \item We discovered the MIPS architecture in compilation course.
         \item We wanted to design an original processor.
-        \item We focused on environments in which the number of gates must be kept small.
+        \item We tried to keep the number of boolean gates small.
     \end{itemize}
-
 \end{frame}
 
 \subsection{Definition}
@@ -77,17 +74,20 @@
 \subsection{Examples}
 \begin{frame}[fragile]{Examples}
   \begin{verbatim}
-    3  4  6   8  8  -1   5  3  0
-    3  4  6   8  0  -1   5  3  0
-    3  4  6   9  0  -1   5  3  0
-    3  4  6   9 -9  -1   5  3  0
-    3  4  6  10 -9  -1   5  3  0
+    3  4  5   8  8   8  3  0  -1     PC : 0
+    3  4  5   8  0   8  3  0  -1     PC : 6
+    3  4  5   9  0   8  3  0  -1     PC : 0
+    3  4  5   9 -9   8  3  0  -1     ...
+    3  4  5  10 -9   8  3  0  -1
+    ...
   \end{verbatim}
+  The code does not need to be aligned.
 \end{frame}
 
 \begin{frame}[fragile]
     \frametitle{Examples}
-Common instructions can be written with \texttt{Subleq}, for instance :
+Syntactic sugar : Labels, semi-colon (address of the following cell).
+Common instructions can be written with \texttt{subleq}, for instance :
 
 \begin{columns}[t]
     \begin{column}[T]{3cm}
@@ -126,7 +126,7 @@ j lbl :
 \end{frame}
 
 \section{Chip architecture}
-\subsection{The cycle}
+\subsection{Cycle}
 
 \begin{frame}[fragile]
     \frametitle{The cycle}
@@ -134,36 +134,37 @@ j lbl :
 	\begin{column}[T]{4cm}
     \begin{enumerate}
       \setcounter{enumi}{0}
-        \item \textbf{Step 1}
+        \item
           \begin{verbatim}
 Store A
 Read address : B
 Increment PC
           \end{verbatim}
-        \item \textbf{Step 2}
+        \item
           \begin{verbatim}
 Store B
 Read address : VA
           \end{verbatim}
-        \item \textbf{Step 3}
+        \item
 	        \begin{verbatim}
 Store VA in A
 Read address : VB
           \end{verbatim}
   	\end{enumerate}
 	\end{column}
-	\begin{column}[T]{7cm}
+	\begin{column}[T]{6cm}
   	\begin{enumerate}
   	  \setcounter{enumi}{3}
-  	    \item \textbf{Step 4}
+  	    \item
   	      \begin{verbatim}
 Store VB
 Read address : C
 Increment PC
   	      \end{verbatim}
-  	    \item \textbf{Step 5}
+  	    \item 
   	      \begin{verbatim}
-If VB - VA <= 0 then set PC to C
+If VB - VA <= 0
+  then set PC to C
 Read address : A at PC
 Increment PC
   	      \end{verbatim}
@@ -173,9 +174,9 @@ Increment PC
 
 \end{frame}
 
-\subsection{Outline of the chip}
+\subsection{Chip layout}
 \begin{frame}
-    \frametitle{Outline}
+    \frametitle{Layout}
     \centering
     \input{schema2}
 \end{frame}
@@ -188,11 +189,11 @@ Increment PC
 e
 \end{frame}
 
-\subsection{7-segments output}
+\subsection{7-segments display}
 
 \begin{frame}
-\frametitle{7-segments output}
-The conversion from binary values to 7-segments output is built in the chip, in two steps :
+\frametitle{7-segments display}
+The conversion from binary values to 7-segments display is built in the chip, in two steps :
 \begin{enumerate}
     \item Binary $\rightarrow$ Binary Coded Decimal (BCD)
         
