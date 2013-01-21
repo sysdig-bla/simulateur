@@ -1,0 +1,61 @@
+
+\tikzstyle{operateur} =
+[style={circle,fill=gray!20,draw,font=\sffamily\large\bfseries}]
+\tikzstyle{not} = [draw,style={circle,fill=gray!20},minimum size=0.0cm]
+\tikzstyle{reg} = [style={fill=gray!20,draw,thick,minimum size=0.8cm}]
+\tikzstyle{boite} = [minimum height=2cm, minimum width=2cm,rectangle,
+					style={fill=gray!20,draw,thick}]
+\tikzstyle{ptiteboite} = [minimum height=1.5cm, minimum width=1.5cm,rectangle,
+					style={fill=gray!20,draw,thick}]
+\tikzstyle{rambox} = [minimum height=7cm, minimum width=2cm,rectangle,
+					style={fill=gray!20,draw,thick}]
+\tikzstyle{muxv} = [minimum height=1.6cm, minimum width=0.5cm,rectangle,
+	               style={fill=gray!20,draw,thick}]
+\tikzstyle{mux} = [minimum height=0.5cm, minimum width=1.6cm,rectangle,
+	               style={fill=gray!20,draw,thick}]
+\tikzstyle{muxb} = [node distance=0.4cm,style={minimum size=0.5cm}]
+\tikzstyle{vide} = []
+\tikzstyle{noeud} = [style={circle,fill=black,minimum size=0cm}]
+\tikzstyle{fil} = [->,style={thick}]
+\tikzstyle{filb} = [style={thick}]
+\tikzstyle{ecrit} = [font=\sffamily\small\bfseries]
+\tikzstyle{exterieur} = [dashed, draw]
+\tikzstyle{hypot} = [dashed]
+
+\begin{tikzpicture}[auto, node distance=3.5cm,>=latex', scale = 0.6, every node/.style={transform shape}]
+
+\node[boite] (muxers) {Muxers};
+
+\node[boite, right of=muxers] (memctrl) {Memory controller};
+\node[boite, above right of=memctrl] (ram) {RAM};
+\node[ptiteboite, below right of=memctrl] (dd) {DD};
+\node[ptiteboite, right of=dd, node distance=2.5cm] (bcd) {BCD};
+
+\node[reg, above of=muxers] (pc) {PC};
+\node[reg, below of=muxers] (b) {B};
+\node[reg, left of=b,node distance=1cm] (a) {A};
+\node[reg, right of=b,node distance=1cm] (vb) {VB};
+\node[boite, left of=muxers] (sched) {Scheduler};
+\node[operateur, below of=b, node distance=2cm] (sub) {sub};
+\node[operateur, left of=sub] (leqz) {leqz};
+
+\draw[fil] (sched) -- (muxers);
+\draw[filb] (muxers) -- (memctrl);
+\draw[filb] (pc) -- (muxers);
+\draw[filb] (a) |- ($(a) + (0.8cm,0.6cm)$) -| ($(muxers)+(-0.2cm,-1cm)$);
+\draw[filb] (b) -- (muxers);
+\draw[filb] (vb) |- ($(vb) + (-0.8cm,0.6cm)$) -| ($(muxers)+(0.2cm,-1cm)$);
+
+\draw[fil] (memctrl) |- (dd);
+\draw[fil] (dd) -- (bcd);
+\draw[filb] (memctrl) |- (ram);
+
+\draw[fil] (a) |- ($(a)+(0.4cm,-0.6cm)$) -| ($(sub)+(-0.4cm,0.4cm)$);
+\draw[fil] (vb) |- ($(vb)+(-0.4cm,-0.6cm)$) -| ($(sub)+(0.4cm,0.4cm)$);
+\draw[fil] (sub) -- (leqz);
+\draw[fil] (leqz) -| ($(leqz)+(1.8cm,3cm)$) -| ($(muxers)+(-0.4cm,-1cm)$);
+\draw[fil] (leqz) |- ($(leqz)+(1.8cm,3.2cm)$) -| ($(muxers)+(-0.6cm,-1cm)$);
+
+
+\end{tikzpicture}
+
