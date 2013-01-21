@@ -28,8 +28,8 @@
 
 \node[boite, right of=muxers] (memctrl) {Memory controller};
 \node[boite, above right of=memctrl] (ram) {RAM};
-\node[ptiteboite, below right of=memctrl] (dd) {DD};
-\node[ptiteboite, right of=dd, node distance=2.5cm] (bcd) {BCD};
+\node[ptiteboite, below right of=memctrl] (dd) {BCD};
+\node[ptiteboite, right of=dd, node distance=2.5cm] (bcd) {7-seg};
 
 \node[reg, above of=muxers] (pc) {PC};
 \node[reg, below of=muxers] (b) {B};
