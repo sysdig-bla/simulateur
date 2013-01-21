@@ -55,7 +55,8 @@
 \begin{frame}[fragile]
     \frametitle{\texttt{subleq}}
 
-    The instruction set is made of only one instruction :
+    The instruction set is made of only one instruction written as 3
+    integers :
     \\[11pt]
     \begin{lstlisting}
       a b c
@@ -63,10 +64,9 @@
     which means :
 
     \begin{lstlisting}
-      b := b - a;
-      if b > 0 then
-        go to the next instruction
-      else go to c
+      b <- *b - *a
+      if b <= 0 then go to c
+      else go to next instruction
     \end{lstlisting}
 
 \end{frame}
