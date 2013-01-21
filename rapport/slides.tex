@@ -1,4 +1,4 @@
-\documentclass[slidestop]{beamer}
+\documentclass{beamer}
 \usepackage[utf8]{inputenc}
 \usepackage[francais]{babel}
 \usepackage{bbm}
@@ -7,7 +7,7 @@
 \usepackage{graphicx}
 \usepackage{amsthm}
 \usepackage{amsmath}
-\usetheme{Boadilla}
+\usetheme{default}
 \usecolortheme{seahorse}
 \usepackage{mathtools}
 \usepackage{listings}
@@ -21,6 +21,8 @@
 
 
 \hypersetup{pdfstartview={FitH}}
+
+
 \begin{document}
 
 \makeatletter
@@ -37,7 +39,8 @@
     \frametitle{Outline}
     \tableofcontents
 \end{frame}
-\section{The \texttt{subleq} language}
+
+\section{The \texttt{Subleq} language}
 \subsection{Motivation}
 
 \begin{frame}
@@ -46,28 +49,28 @@
     \begin{itemize}
         \item We discovered the MIPS architecture in compilation course.
         \item We wanted to design an original processor.
-        \item We focused on environments in wich the number of gates must be kept small.
+        \item We focused on environments in which the number of gates must be kept small.
     \end{itemize}
 
 \end{frame}
 
 \subsection{Definition}
 \begin{frame}[fragile]
-    \frametitle{\texttt{subleq}}
+    \frametitle{\texttt{Subleq}}
 
     The instruction set is made of only one instruction written as 3
     integers :
     \\[11pt]
-    \begin{lstlisting}
+    \begin{verbatim}
       a b c
-    \end{lstlisting}
+    \end{verbatim}
     which means :
 
-    \begin{lstlisting}
+    \begin{verbatim}
       b <- *b - *a
       if b <= 0 then go to c
       else go to next instruction
-    \end{lstlisting}
+    \end{verbatim}
 
 \end{frame}
 
@@ -84,11 +87,11 @@
 
 \begin{frame}[fragile]
     \frametitle{Examples}
-Common instructions can be written with \texttt{subleq}, for instance :
+Common instructions can be written with \texttt{Subleq}, for instance :
 
 \begin{columns}[t]
-    \begin{column}[T]{5cm}
-\begin{lstlisting}
+    \begin{column}[T]{3cm}
+\begin{verbatim}
 move a b :
   a Z ;
   b b ;
@@ -101,10 +104,10 @@ add a b c :
   a a ;
   Z a ;
   Z Z ;
-\end{lstlisting}
+\end{verbatim}
     \end{column}
-\begin{column}[T]{5cm}
-\begin{lstlisting}
+\begin{column}[T]{3cm}
+\begin{verbatim}
 beqz a lbl :
    Z a L1
    Z Z L3
@@ -117,7 +120,7 @@ L3:
 
 j lbl :
    Z Z lbl
-\end{lstlisting}
+\end{verbatim}
 \end{column}
 \end{columns}
 \end{frame}
@@ -127,51 +130,45 @@ j lbl :
 
 \begin{frame}[fragile]
     \frametitle{The cycle}
-
-    \begin{columns}[t]
-        \begin{column}[T]{5cm}
+\begin{columns}[t]
+	\begin{column}[T]{4cm}
     \begin{enumerate}
-            \setcounter{enumi}{-1}
-
+      \setcounter{enumi}{0}
         \item \textbf{Step 1}
-            \begin{lstlisting}
- Store A,
- Read address : B,
- Increment PC
-            \end{lstlisting}
+          \begin{verbatim}
+Store A
+Read address : B
+Increment PC
+          \end{verbatim}
         \item \textbf{Step 2}
-            \begin{lstlisting}
- Store B,
- Read address : VA
-            \end{lstlisting}
-
+          \begin{verbatim}
+Store B
+Read address : VA
+          \end{verbatim}
         \item \textbf{Step 3}
-            \begin{lstlisting}
- Store VA in A,
- Read address : VB
-            \end{lstlisting}
-
-    \end{enumerate}
-\end{column}
-\begin{column}[T]{5cm}
-    \begin{enumerate}
-        \setcounter{enumi}{1}
-        \item \textbf{Step 4}
-            \begin{lstlisting}
- Store VB,
- Read address : C,
- Increment PC
-            \end{lstlisting}
-
-        \item \textbf{Step 5}
-            \begin{lstlisting}
- If VB - VA <= 0
-   then set PC to C,
- Read address : A at PC,
- Increment PC
-             \end{lstlisting}
-    \end{enumerate}
-\end{column}
+	        \begin{verbatim}
+Store VA in A
+Read address : VB
+          \end{verbatim}
+  	\end{enumerate}
+	\end{column}
+	\begin{column}[T]{7cm}
+  	\begin{enumerate}
+  	  \setcounter{enumi}{3}
+  	    \item \textbf{Step 4}
+  	      \begin{verbatim}
+Store VB
+Read address : C
+Increment PC
+  	      \end{verbatim}
+  	    \item \textbf{Step 5}
+  	      \begin{verbatim}
+If VB - VA <= 0 then set PC to C
+Read address : A at PC
+Increment PC
+  	      \end{verbatim}
+  	\end{enumerate}
+	\end{column}
 \end{columns}
 
 \end{frame}
@@ -179,7 +176,9 @@ j lbl :
 \subsection{Outline of the chip}
 \begin{frame}
     \frametitle{Outline}
+    \begin{center}
     \input{schema}
+    \end{center}
 \end{frame}
 
 \section{Implementation details}
