@@ -139,13 +139,13 @@ node {st5};
     \draw[fil] (pcreg) -| ++(2cm,2cm) |- ($(muxers)+(-1cm,0.9cm)$);
 
     \node[operateur] at (-1cm,-5.2cm) (sub) {sub};
-    \node[operateur] at (-1cm,-3.2cm) (neg) {neg};
+    \node[operateur] at (-1cm,-3.2cm) (leqz) {leqz};
     \draw[fil] (ctrlrr.mid) -| (sub);
-    \draw[fil] (sub) -- (neg);
+    \draw[fil] (sub) -- (leqz);
     \draw[filb] (sub) -| ++(1cm,1.5cm) -| ++(1.3cm,0.4cm) -- ++(4cm,0);
     \draw[fil] ($(sub)+(6.3cm,1.9cm)$) |- ($(muxers)+(-1cm,0.7cm)$);
     \draw[fil] (ctrlrop0.mid) -| ($(sub)+(0.35,-0.35)$);
-    \draw[fil] (neg) -| (pcmuxi);
+    \draw[fil] (leqz) -| (pcmuxi);
 
     \end{tikzpicture}
 
