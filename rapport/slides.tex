@@ -198,8 +198,20 @@ The conversion from binary values to 7-segments output is built in the chip, in 
 
         \texttt{0100}.\texttt{0010} $\rightarrow$ \texttt{1100110}.\texttt{0111011}
 \end{enumerate}
+
+The first step is done with the \emph{double dabble} algorithm, the second step using a circuit derived
+from the desired truth table.
+
 \end{frame}
 
+\begin{frame}
+    \frametitle{Double dabble}
+
+    How to multiply by 2 a number written in BCD ?
+
+    If the digits are all less than 5, one shift is enough.
+    Adding a carry if a digit is $\geq$ 5
+\end{frame}
 
 \end{document}
 
