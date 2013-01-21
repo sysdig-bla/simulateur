@@ -2,6 +2,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[francais]{babel}
 \usepackage{bbm}
+\usepackage{SevenSeg}
 \usepackage{epstopdf}
 \usepackage{pdfpages}
 \usepackage{graphicx}
@@ -28,7 +29,32 @@
 
 \title{A Watch Using Subleq}
 \author{Baptiste Lefebvre, Li-yao Xia, Antonin Delpeuch}
-\date{2013/01/22 15 : 55}
+\date{\begin{tikzpicture}[scale=0.25, every node/.style={transform shape}]
+        \node at (0,0) (n0) {};
+        \SSGNb[0.75cm]{n0}{2}
+        \node at (1,0) (n1) {};
+        \SSGNb[0.75cm]{n1}{0}
+        \node at (2,0) (n2) {};
+        \SSGNb[0.75cm]{n2}{1}
+        \node at (3,0) (n3) {};
+        \SSGNb[0.75cm]{n3}{3}
+        \node at (4.5,0) (n4) {};
+        \SSGNb[0.75cm]{n4}{0}
+        \node at (5.5,0) (n5) {};
+        \SSGNb[0.75cm]{n5}{1}
+        \node at (7,0) (n6) {};
+        \SSGNb[0.75cm]{n6}{2}
+        \node at (8,0) (n7) {};
+        \SSGNb[0.75cm]{n7}{2}
+        \node at (9.5,0) (n8) {};
+        \SSGNb[0.75cm]{n8}{1}
+        \node at (10.5,0) (n9) {};
+        \SSGNb[0.75cm]{n9}{5}
+        \node at (12,0) (n10) {};
+        \SSGNb[0.75cm]{n10}{5}
+        \node at (13,0) (n11) {};
+        \SSGNb[0.75cm]{n11}{5}
+  \end{tikzpicture}}
 
 \begin{frame}
     \maketitle
@@ -186,6 +212,7 @@ Increment PC
 \subsection{Memory management}
 
 \begin{frame}
+    \frametitle{Memory controller}
 e
 \end{frame}
 
@@ -214,8 +241,50 @@ from the desired truth table.
     How to multiply by 2 a number written in BCD ?
 
     If the digits are all less than 5, one shift is enough.
-    Adding a carry if a digit is $\geq$ 5 is necessary
+    Otherwise we propagate a carry by adding 3 to the digit before shifting it.
+
+    \begin{columns}[t]
+        \begin{column}[T]{5cm}
+            \vspace{1cm}
+    \begin{tikzpicture}
+        \node at (-0.75,0.5) {2};
+        \node at (0.75,0.5) {3};
+        \node (init) {\texttt{0 0 1 0 0 0 1 1}};
+        \node at (0,-0.4) (next) {\texttt{0 1 0 0 0 1 1 0}};
+        \draw (0,0.2) -- (0,-0.6);
+        \node at (-0.75,-0.9) {4};
+        \node at (0.75,-0.9) {6};
+        \node at (2.1,-0.4) (sh) {shift};
+    \end{tikzpicture}
+        \end{column}
+        \begin{column}[T]{5cm}
+            \vspace{1cm}
+  \begin{tikzpicture}
+        \node at (-0.75,0.5) {4};
+        \node at (0.75,0.5) {6};
+        \node (init) {\texttt{0 1 0 0 0 1 1 0}};
+        \node at (0,-0.4) (next) {\texttt{0 1 0 0 1 0 0 1}};
+        \node at (0,-0.8) (next) {\texttt{1 0 0 1 0 0 1 0}};
+        \draw (0,0.2) -- (0,-1);
+        \node at (-0.75,-1.3) {9};
+        \node at (0.75,-1.3) {2};
+        \node at (2.2,-0.4) (add3) {add 3};
+        \node at (2.1,-0.8) (sh) {shift};
+    \end{tikzpicture}
+
+        \end{column}
+    \end{columns}
+
+    We add 3 because $2*(5 + 3) = 16$.
 \end{frame}
+
+\begin{frame}
+    \frametitle{Implementation}
+
+
+
+\end{frame}
+
 
 \end{document}
 
