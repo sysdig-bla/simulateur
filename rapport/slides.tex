@@ -7,7 +7,8 @@
 \usepackage{graphicx}
 \usepackage{amsthm}
 \usepackage{amsmath}
-\usetheme{Frankfurt}
+\usetheme{Boadilla}
+\usecolortheme{seahorse}
 \usepackage{mathtools}
 \usepackage{listings}
 \usepackage{tikz}
@@ -54,65 +55,68 @@
 \begin{frame}[fragile]
     \frametitle{\texttt{subleq}}
 
-    The instruction set is made of only one instruction :
+    The instruction set is made of only one instruction written as 3
+    integers :
+    \\[11pt]
+    \begin{lstlisting}
+      a b c
+    \end{lstlisting}
+    which means :
 
-    \texttt{subleq a b c}, which means :
-
-\begin{lstlisting}
-  b := b - a;
-  if b > 0 then
-    go to the next instruction
-  else go to c
-\end{lstlisting}
+    \begin{lstlisting}
+      b <- *b - *a
+      if b <= 0 then go to c
+      else go to next instruction
+    \end{lstlisting}
 
 \end{frame}
 
 \subsection{Examples}
+\begin{frame}[fragile]{Examples}
+  \begin{verbatim}
+    3  4  6   8  8  -1   5  3  0
+    3  4  6   8  0  -1   5  3  0
+    3  4  6   9  0  -1   5  3  0
+    3  4  6   9 -9  -1   5  3  0
+    3  4  6  10 -9  -1   5  3  0
+  \end{verbatim}
+\end{frame}
+
 \begin{frame}[fragile]
     \frametitle{Examples}
-The usual instructions can be written with \texttt{subleq}, for instance :
+Common instructions can be written with \texttt{subleq}, for instance :
 
 \begin{columns}[t]
     \begin{column}[T]{5cm}
 \begin{lstlisting}
 move a b :
-  subleq a Z ;
-  subleq b b ;
-  subleq Z b ;
-  subleq Z Z ;
+  a Z ;
+  b b ;
+  Z b ;
+  Z Z ;
 
+add a b c :
+  c Z ;
+  b Z ;
+  a a ;
+  Z a ;
+  Z Z ;
 \end{lstlisting}
     \end{column}
-    \begin{column}[T]{5cm}
-\begin{lstlisting}
-add a b c :
-  subleq c Z ;
-  subleq b Z ;
-  subleq a a ;
-  subleq Z a ;
-  subleq Z Z ;
-\end{lstlisting}
-\end{column}
-\end{columns}
-
-\begin{columns}[t]
 \begin{column}[T]{5cm}
 \begin{lstlisting}
 beqz a lbl :
-   subleq Z a L1
-   subleq Z Z L3
+   Z a L1
+   Z Z L3
 L1:
-   subleq a Z L2
-   subleq Z Z L3
+   a Z L2
+   Z Z L3
 L2:
-   subleq Z Z lbl
+   Z Z lbl
 L3:
-\end{lstlisting}
-\end{column}
-\begin{column}[T]{5cm}
-\begin{lstlisting}
+
 j lbl :
-   subleq Z Z lbl
+   Z Z lbl
 \end{lstlisting}
 \end{column}
 \end{columns}
@@ -128,43 +132,44 @@ j lbl :
         \begin{column}[T]{5cm}
     \begin{enumerate}
             \setcounter{enumi}{-1}
-        \item \textbf{Step 0}
-            \begin{lstlisting}
- If VB - VA <= 0
-   then set PC to C,
- Ask for A at PC,
- Increment PC
-             \end{lstlisting}
 
         \item \textbf{Step 1}
             \begin{lstlisting}
  Store A,
- Ask for B,
+ Read address : B,
  Increment PC
             \end{lstlisting}
-    \end{enumerate}
-\end{column}
-\begin{column}[T]{5cm}
-    \begin{enumerate}
-        \setcounter{enumi}{1}
         \item \textbf{Step 2}
             \begin{lstlisting}
  Store B,
- Ask for VA
+ Read address : VA
             \end{lstlisting}
 
         \item \textbf{Step 3}
             \begin{lstlisting}
  Store VA in A,
- Ask for VB
+ Read address : VB
             \end{lstlisting}
 
+    \end{enumerate}
+\end{column}
+\begin{column}[T]{5cm}
+    \begin{enumerate}
+        \setcounter{enumi}{1}
         \item \textbf{Step 4}
             \begin{lstlisting}
  Store VB,
- Ask for C,
+ Read address : C,
  Increment PC
             \end{lstlisting}
+
+        \item \textbf{Step 5}
+            \begin{lstlisting}
+ If VB - VA <= 0
+   then set PC to C,
+ Read address : A at PC,
+ Increment PC
+             \end{lstlisting}
     \end{enumerate}
 \end{column}
 \end{columns}
