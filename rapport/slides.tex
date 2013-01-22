@@ -23,12 +23,7 @@
 
 \hypersetup{pdfstartview={FitH}}
 
-
-\begin{document}
-
-\makeatletter
-
-\title{A Watch Using Subleq}
+\title{A Watch Using \texttt{Subleq}}
 \author{Baptiste Lefebvre, Li-yao Xia, Antonin Delpeuch}
 \date{\begin{tikzpicture}[scale=0.25, every node/.style={transform shape}]
         \node at (0,0) (n0) {};
@@ -57,34 +52,46 @@
         \SSGNb[0.75cm]{n11}{5}
   \end{tikzpicture}}
 
+
+\begin{document}
+
+\makeatletter
+
 \begin{frame}
     \maketitle
 \end{frame}
 
 \begin{frame}
-    \frametitle{Layout}
+    %\frametitle{Summary}
     \tableofcontents
 \end{frame}
 
 \section{The \texttt{Subleq} language}
 \subsection{Motivation}
-
 \begin{frame}
-    \frametitle{Motivation}
-    \begin{itemize}
-        \item We already discovered the MIPS architecture
-          in the compilation course.
-        \item Design an original processor.
-        \item Keep the number of boolean gates small.
-        \item \texttt{Subleq} is a lot of fun to write !
-    \end{itemize}
+  \frametitle{Motivation}
+  \begin{itemize}
+    \item We already discovered the MIPS architecture
+      in the compilation course.
+    \item Design an original processor.
+    \item The R in RISC may be misleading. The O in OISC is not.
+    \item \texttt{Subleq} is awesome !
+  \end{itemize}
 \end{frame}
 
-\subsection{Definition}
+\subsection{An exotic architecture}
+\begin{frame}{An exotic architecture}
+  \begin{itemize}
+    \item OISC. One Instruction Set Computer.
+    \item \texttt{Subleq} achieves Turing-completeness with one instruction.
+    \item A short documentation. %and that's all you will ever need
+  \end{itemize}
+\end{frame}
+
 \begin{frame}[fragile]
     \frametitle{\texttt{Subleq}}
-    The instruction set is made of only one instruction written as 3
-    integers :
+    The instruction set is made of only one instruction with three
+    operands which represent memory addresses :
     \\[11pt]
     \begin{verbatim}
       a b c
@@ -103,9 +110,9 @@
 \begin{frame}
   \frametitle{\texttt{Subleq}}
   \begin{itemize}
-    \item Subleq code is a sequence of integers, which initialize
+    \item \texttt{Subleq} code is a sequence of integers, which initialize
       a contiguous memory block starting from address 0.
-    \item A program counter initialized at 0 points to the next
+    \item A program counter initialized at 0 keeps track of the next
       instruction to execute.
     \item Data and instructions in the same place.
   \end{itemize}
@@ -121,7 +128,10 @@
     3  4  5  10 -9   8  3  0  -1
     ...
   \end{verbatim}
-  An instruction does not need to be aligned.
+  \begin{itemize}
+    \item An instruction does not need to be aligned.
+    \item Fun fact : You can write subleq with only a numerical keypad.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -130,8 +140,8 @@ Syntactic sugar : Labels, semi-colon (address of the following cell).
 Common instructions can be written with \texttt{subleq}, for instance :
 
 \begin{columns}[t]
-    \begin{column}[T]{3cm}
-\begin{alltt}
+  \begin{column}[T]{3cm}
+    \begin{alltt}
 {\bf move} a b :
    a Z ;
    b b ;
@@ -144,10 +154,10 @@ Common instructions can be written with \texttt{subleq}, for instance :
    a a ;
    Z a ;
    Z Z ;
-\end{alltt}
-    \end{column}
-\begin{column}[T]{3cm}
-\begin{alltt}
+    \end{alltt}
+  \end{column}
+  \begin{column}[T]{3cm}
+    \begin{alltt}
 {\bf beqz} a lbl :
    	Z a L1
    	Z Z L3
@@ -160,58 +170,58 @@ Common instructions can be written with \texttt{subleq}, for instance :
 
 {\bf j} lbl :
     Z Z lbl
-\end{alltt}
-\end{column}
-\end{columns}
+    \end{alltt}
+  \end{column}
+  \end{columns}
 \end{frame}
 
 \section{Chip architecture}
-\subsection{Cycle}
+\subsection{Instruction cycle}
 
 \begin{frame}[fragile]
-    \frametitle{The cycle}
-\begin{columns}[t]
-	\begin{column}[T]{4cm}
-    \begin{enumerate}
-      \setcounter{enumi}{0}
+  \frametitle{Instruction cycle}
+  Steps in decoding the instruction \verb=A B C=.
+  \begin{columns}[t]
+    \begin{column}[T]{4cm}
+      \begin{enumerate}
+        \setcounter{enumi}{0}
         \item
           \begin{verbatim}
 Store A
-Read address : B
+Read address : &B
 Increment PC
           \end{verbatim}
         \item
           \begin{verbatim}
 Store B
-Read address : VA
+Read address : A
           \end{verbatim}
         \item
-	        \begin{verbatim}
+	  \begin{verbatim}
 Store VA in A
-Read address : VB
+Read address : B
           \end{verbatim}
-  	\end{enumerate}
-	\end{column}
-	\begin{column}[T]{6cm}
-  	\begin{enumerate}
-  	  \setcounter{enumi}{3}
-  	    \item
-  	      \begin{verbatim}
+      \end{enumerate}
+    \end{column}
+    \begin{column}[T]{6cm}
+      \begin{enumerate}
+      \setcounter{enumi}{3}
+        \item
+          \begin{verbatim}
 Store VB
-Read address : C
+Read address : &C
 Increment PC
-  	      \end{verbatim}
-  	    \item 
-  	      \begin{verbatim}
+          \end{verbatim}
+        \item 
+          \begin{verbatim}
 If VB - VA <= 0
   then set PC to C
-Read address : A at PC
+Read address : &A=PC
 Increment PC
-  	      \end{verbatim}
-  	\end{enumerate}
-	\end{column}
-\end{columns}
-
+          \end{verbatim}
+      \end{enumerate}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \subsection{Chip layout}
@@ -303,21 +313,29 @@ from the desired truth table.
 
 
 \begin{frame}[fragile]
-    \frametitle{Time management}
-
-    As the number of instructions executed per second is constant, our watch program has to sleep by itself until
-    the next second.
-
+  \frametitle{Time management and programming}
+  \begin{itemize}
+    \item 5 clock ticks per instruction.
+    \item 1024 Hz
+    \item Up to the watch program to keep track of elapsed cycles.
+    \item Unused cycles must be spent in a loop.
     \begin{verbatim}
 ...
-p40 cyclesleft ;  ##
+start:
+p10 cyclesleft main
+0 0 start
+
+main:
+...
+p40 cyclesleft ;
 # reset minutes
 -2 -2 ;
-...
+... # a sequence of 6 more instructions
     \end{verbatim}
-
-    This is achieved by adding some instructions to count the number of instructions executed during the computation.
-    Then the program loops until the right number of instructions is reached.
+    \item Given a perfect clock, our watch should drift from UTC by
+      less than a second a year.
+    \item Keep the number of boolean gates small.
+  \end{itemize}
 \end{frame}
 
 
