@@ -61,9 +61,20 @@
     \maketitle
 \end{frame}
 
-\begin{frame}
-    %\frametitle{Summary}
-    \tableofcontents
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \tableofcontents[currentsection]
+  \end{frame}
+}
+
+\begin{frame}{Project}
+  Design a microprocessor for a digital watch.
+  \begin{itemize}
+    \item Minijazz compiler (provided)
+    \item Logic circuit simulator
+    \item Compiler-interpret for a custom assembly language
+  \end{itemize}
 \end{frame}
 
 \section{The \texttt{Subleq} language}
@@ -71,11 +82,11 @@
 \begin{frame}
   \frametitle{Motivation}
   \begin{itemize}
-    \item We already discovered the MIPS architecture
+    \item We already discovered the MIPS architecture previously
       in the compilation course.
-    \item Design an original processor.
-    \item The R in RISC may be misleading. The O in OISC is not.
-    \item \texttt{Subleq} is awesome !
+    \item<2-> Design an original processor.
+    \item<3-> The R in RISC may be misleading. The O in OISC is not.
+    \item<4-> \texttt{Subleq} is simple and fun !
   \end{itemize}
 \end{frame}
 
@@ -83,8 +94,9 @@
 \begin{frame}{An exotic architecture}
   \begin{itemize}
     \item OISC. One Instruction Set Computer.
-    \item \texttt{Subleq} achieves Turing-completeness with one instruction.
-    \item A short documentation. %and that's all you will ever need
+    \item<2-> \texttt{Subleq} achieves Turing-completeness
+      with one instruction.
+    \item<3-> A short documentation. %and that's all you will ever need
   \end{itemize}
 \end{frame}
 
@@ -94,14 +106,15 @@
     operands which represent memory addresses :
     \\[11pt]
     \begin{verbatim}
-      a b c
+      A B C
     \end{verbatim}
+    \pause
     which means :
 
     \begin{alltt}
-       b \(\leftarrow\) *b - *a
-      {\bf if} b \(\leq\) 0
-      {\bf then} go to c
+       B \(\leftarrow\) *B - *A
+      {\bf if} B \(\leq\) 0
+      {\bf then} go to B
       {\bf else} go to next instruction
     \end{alltt}
 
@@ -110,27 +123,26 @@
 \begin{frame}
   \frametitle{\texttt{Subleq}}
   \begin{itemize}
-    \item \texttt{Subleq} code is a sequence of integers, which initialize
-      a contiguous memory block starting from address 0.
-    \item A program counter initialized at 0 keeps track of the next
-      instruction to execute.
-    \item Data and instructions in the same place.
+    \item \texttt{Subleq} code is a sequence of integers% which initialize
+      %a contiguous memory block starting from address 0.
+    \item<2-> A program counter keeps track of the next instruction to execute.
+    \item<3-> Data and instructions in the same place.
   \end{itemize}
 \end{frame}
 
 \subsection{Examples}
 \begin{frame}[fragile]{Examples}
-  \begin{verbatim}
-    3  4  5   8  8   8  3  0  -1     PC : 0
-    3  4  5   8  0   8  3  0  -1     PC : 6
-    3  4  5   9  0   8  3  0  -1     PC : 0
-    3  4  5   9 -9   8  3  0  -1     ...
-    3  4  5  10 -9   8  3  0  -1
-    ...
-  \end{verbatim}
+  \begin{alltt}
+  3  4  5   8  8   8  3  0  -1     PC : 0\pause
+  3  4  5   8  0   8  3  0  -1     PC : 5\pause
+  3  4  5   9  0   8  3  0  -1     PC : 0\pause
+  3  4  5   9 -9   8  3  0  -1     ...\pause
+  3  4  5  10 -9   8  3  0  -1
+  ...
+  \end{alltt}
   \begin{itemize}
-    \item An instruction does not need to be aligned.
-    \item Fun fact : You can write subleq with only a numerical keypad.
+    \item<6-> An instruction does not need to be aligned.
+    \item<7-> Fun fact : You can write subleq with only a numerical keypad.
   \end{itemize}
 \end{frame}
 
@@ -175,53 +187,36 @@ Common instructions can be written with \texttt{subleq}, for instance :
   \end{columns}
 \end{frame}
 
+
 \section{Chip architecture}
+\subsection{Technical specifications}
+
+\begin{frame}{Technical specifications}
+  Digital watch.
+  \begin{itemize}
+    \item Memory : $2^{15}$ 2-byte words.
+    \item Speed : 1024 Hz (200 IPS)
+  \end{itemize}
+\end{frame}
+
 \subsection{Instruction cycle}
 
 \begin{frame}[fragile]
   \frametitle{Instruction cycle}
-  Steps in decoding the instruction \verb=A B C=.
-  \begin{columns}[t]
-    \begin{column}[T]{4cm}
+  Steps in decoding the instruction \verb=A B C= :
       \begin{enumerate}
-        \setcounter{enumi}{0}
-        \item
-          \begin{verbatim}
-Store A
-Read address : &B
-Increment PC
-          \end{verbatim}
-        \item
-          \begin{verbatim}
-Store B
-Read address : A
-          \end{verbatim}
-        \item
-	  \begin{verbatim}
-Store VA in A
-Read address : B
-          \end{verbatim}
-      \end{enumerate}
-    \end{column}
-    \begin{column}[T]{6cm}
-      \begin{enumerate}
-      \setcounter{enumi}{3}
-        \item
-          \begin{verbatim}
-Store VB
-Read address : &C
-Increment PC
-          \end{verbatim}
-        \item 
-          \begin{verbatim}
-If VB - VA <= 0
+        \item<2-> \verb=Read A=
+        \item<3-> \verb=Read B=
+        \item<4-> \verb=Read *A=
+        \item<5-> \verb=Read *B=
+        \item<6->
+          \begin{alltt}
+Read C
+If VB - VA \(\leq\) 0
   then set PC to C
-Read address : &A=PC
-Increment PC
-          \end{verbatim}
+else set PC to PC+3
+          \end{alltt}
       \end{enumerate}
-    \end{column}
-  \end{columns}
 \end{frame}
 
 \subsection{Chip layout}
@@ -231,13 +226,28 @@ Increment PC
     \input{schema2}
 \end{frame}
 
-\section{Implementation details}
+\begin{frame}{Possible improvement}
+  \begin{itemize}
+    \item A parallel addressing RAM : One clock tick = one instruction.
+  \end{itemize}
+\end{frame}
 
+
+\section{Implementation details}
 
 \subsection{Memory management}
 
-\begin{frame}
-	\frametitle{Memory management}
+\begin{frame}{Memory management}
+  \begin{itemize}
+    \item Pure \texttt{Subleq} has no output feature and memory is
+      unbounded in theory.
+    \item<2-> Our solution : immediate access to some part of the memory
+      in the circuit.
+    \item<3-> Negative addresses will be "virtual memory cells".
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Memory management}
 	\centering
 	\input{schema3}
 \end{frame}
@@ -245,19 +255,21 @@ Increment PC
 \subsection{7-segments display}
 
 \begin{frame}
-\frametitle{7-segments display}
-The conversion from binary values to 7-segments display is built in the chip, in two steps :
-\begin{enumerate}
-    \item Binary $\rightarrow$ Binary Coded Decimal (BCD)
-        
+  \frametitle{7-segments display}
+  The conversion from binary values to 7-segments display is built
+  in the chip, in two steps :
+  \begin{enumerate}
+    \item<2-> Binary $\rightarrow$ Binary Coded Decimal (BCD)
+
           \texttt{101010} $\rightarrow$ \texttt{0100}.\texttt{0010}
-    \item BCD $\rightarrow$ 7-segments
+    \item<3-> BCD $\rightarrow$ 7-segments
 
-        \texttt{0100}.\texttt{0010} $\rightarrow$ \texttt{1100110}.\texttt{0111011}
+        \texttt{0100}.\texttt{0010} $\rightarrow$
+        \texttt{1100110}.\texttt{0111011}
 \end{enumerate}
-
-The first step is done with the \emph{double dabble} algorithm, the second step using a circuit derived
-from the desired truth table.
+\onslide<4->
+The first step is done with the \emph{double dabble} algorithm,
+the second step using a circuit derived from the desired truth table.
 
 \end{frame}
 
@@ -265,9 +277,11 @@ from the desired truth table.
     \frametitle{Double dabble}
 
     How to multiply by 2 a number written in BCD ?
+    \pause
 
     If the digits are all less than 5, one shift is enough.
     Otherwise we propagate a carry by adding 3 to the digit before shifting it.
+    \pause
 
     \begin{columns}[t]
         \begin{column}[T]{5cm}
@@ -311,14 +325,19 @@ from the desired truth table.
 
 \end{frame}
 
-
-\begin{frame}[fragile]
-  \frametitle{Time management and programming}
+\subsection{Time management and programming}
+\begin{frame}
+  \frametitle{Time tracking and programming}
   \begin{itemize}
     \item 5 clock ticks per instruction.
-    \item 1024 Hz
-    \item Up to the watch program to keep track of elapsed cycles.
-    \item Unused cycles must be spent in a loop.
+    \item 1024 Hz (about 200 IPS)
+    \item<2-> Up to the watch program to keep track of elapsed cycles.
+    \item<3-> Unused cycles must be spent in a loop.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Time tracking and programming}
     \begin{verbatim}
 ...
 start:
@@ -332,9 +351,16 @@ p40 cyclesleft ;
 -2 -2 ;
 ... # a sequence of 6 more instructions
     \end{verbatim}
-    \item Given a perfect clock, our watch should drift from UTC by
-      less than a second a year.
-    \item Keep the number of boolean gates small.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Summary}
+  \begin{itemize}
+    \item One instruction. Learn a language in 5 minutes.
+    \item<2-> Few logic gates. %because of the architecture choice
+    \item<3-> Given a perfect clock, our watch should drift away from UTC
+      by less than a second a year. (leap seconds)
+    \item<4-> Valid display until December 31st, 4095
   \end{itemize}
 \end{frame}
 

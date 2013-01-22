@@ -27,19 +27,19 @@
 \node[boite] (muxers) {Muxers};
 
 \node[boite, right of=muxers] (memctrl) {Memory controller};
-\node[boite, above right of=memctrl] (ram) {RAM};
+\node[boite, above of=memctrl,node distance=3cm] (ram) {RAM};
 \node[ptiteboite, below right of=memctrl] (dd) {BCD};
 \node[ptiteboite, right of=dd, node distance=2.5cm] (bcd) {7-seg};
 
-\node[reg, above of=muxers] (pc) {PC};
+\node[reg, above of=muxers,node distance=2cm] (pc) {PC};
 \node[reg, below of=muxers] (b) {B};
 \node[reg, left of=b,node distance=1cm] (a) {A};
 \node[reg, right of=b,node distance=1cm] (vb) {VB};
-\node[boite, left of=muxers] (sched) {Scheduler};
+\node[ptiteboite, left of=muxers] (count) {Counter};
 \node[operateur, below of=b, node distance=2cm] (sub) {sub};
 \node[operateur, left of=sub] (leqz) {leqz};
 
-\draw[fil] (sched) -- (muxers);
+\draw[fil] (count) -- (muxers);
 \draw[filb] (muxers) -- (memctrl);
 \draw[filb] (pc) -- (muxers);
 \draw[filb] (a) |- ($(a) + (0.8cm,0.6cm)$) -| ($(muxers)+(-0.2cm,-1cm)$);
@@ -48,7 +48,7 @@
 
 \draw[fil] (memctrl) |- (dd);
 \draw[fil] (dd) -- (bcd);
-\draw[filb] (memctrl) |- (ram);
+\draw[filb] (memctrl) -- (ram);
 
 \draw[fil] (a) |- ($(a)+(0.4cm,-0.6cm)$) -| ($(sub)+(-0.4cm,0.4cm)$);
 \draw[fil] (vb) |- ($(vb)+(-0.4cm,-0.6cm)$) -| ($(sub)+(0.4cm,0.4cm)$);
