@@ -255,10 +255,10 @@ else set PC to PC+3
 	\input{schema3}
 \end{frame}
 
-\subsection{7-segments display}
+\subsection{7-segment display}
 
 \begin{frame}
-  \frametitle{7-segments display}
+  \frametitle{7-segment display}
   The conversion from binary values to 7-segments display is built
   in the chip, in two steps :
   \begin{enumerate}
@@ -348,13 +348,14 @@ the second step using a circuit derived from the desired truth table.
 start:
 p10 cyclesleft main
 0 0 start
-
 main:
+m1024 cyclesleft main
+
+p35 cyclesleft ;
+... # a sequence of 6 instructions
 ...
-p40 cyclesleft ;
-# reset minutes
--2 -2 ;
-... # a sequence of 6 more instructions
+
+0 0 start
     \end{verbatim}
 \end{frame}
 
