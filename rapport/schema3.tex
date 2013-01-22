@@ -14,6 +14,9 @@
 	\node[cell] at (0cm,2.6cm) (min) {\small{min}};
 	\node[cell] at (0cm,1.8cm) (sec) {\small{sec}};
 
+	\draw[fil] (y) -- ++(0,2);
+	\node[above of=y, node distance=1.5cm] (lblbcd) {BCD};
+
 % RAM cells
 	\node[cell, minimum height = 3cm, minimum width = 3.6cm] at
 (0cm,-1.5cm) (RAM) {RAM};
