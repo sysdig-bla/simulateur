@@ -15,7 +15,7 @@ montre/montre.net: montre/mjc.byte
 	cd montre ; make
 
 quick:
-	./sim2/netlist_sim2.byte -s 50 -m subleq/montre.mem montre/montre.net -disp -n 1024
+	./sim2/netlist_sim2.byte -s 100000 -m subleq/montre.mem montre/montre.net -n 1024 -v
 
 display:
 	./sim2/netlist_sim2.byte -s 1000000000 -c 10 -m subleq/montre.mem montre/montre.net -disp

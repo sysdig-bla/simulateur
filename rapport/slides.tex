@@ -3,7 +3,7 @@
 \usepackage[francais]{babel}
 \usepackage{bbm}
 \usepackage{SevenSeg}
-\usepackage{epstopdf}
+%\usepackage{epstopdf}
 \usepackage{pdfpages}
 \usepackage{graphicx}
 \usepackage{amsthm}
@@ -61,10 +61,10 @@
     \maketitle
 \end{frame}
 
-\AtBeginSection[]
+\AtBeginSubsection[]
 {
   \begin{frame}<beamer>
-    \tableofcontents[currentsection]
+    \tableofcontents[currentsubsection]
   \end{frame}
 }
 
@@ -81,6 +81,8 @@
 \subsection{Motivation}
 \begin{frame}
   \frametitle{Motivation}
+  % Our architecture diverges from the specification in our
+  % preliminary report
   \begin{itemize}
     \item We already discovered the MIPS architecture previously
       in the compilation course.
@@ -117,7 +119,6 @@
       {\bf then} go to B
       {\bf else} go to next instruction
     \end{alltt}
-
 \end{frame}
 
 \begin{frame}
@@ -127,6 +128,7 @@
       %a contiguous memory block starting from address 0.
     \item<2-> A program counter keeps track of the next instruction to execute.
     \item<3-> Data and instructions in the same place.
+      % that means a self modificating code is feasible
   \end{itemize}
 \end{frame}
 
@@ -148,6 +150,7 @@
 
 \begin{frame}[fragile]
     \frametitle{Examples}
+% We have introduced some syntactic sugar in our language
 Syntactic sugar : Labels, semi-colon (address of the following cell).
 Common instructions can be written with \texttt{subleq}, for instance :
 
@@ -171,8 +174,8 @@ Common instructions can be written with \texttt{subleq}, for instance :
   \begin{column}[T]{3cm}
     \begin{alltt}
 {\bf beqz} a lbl :
-   	Z a L1
-   	Z Z L3
+    Z a L1
+    Z Z L3
  L1:
     a Z L2
     Z Z L3
@@ -240,7 +243,7 @@ else set PC to PC+3
 \begin{frame}{Memory management}
   \begin{itemize}
     \item Pure \texttt{Subleq} has no output feature and memory is
-      unbounded in theory.
+      unbounded in theory. % Those are needed for Turing completeness
     \item<2-> Our solution : immediate access to some part of the memory
       in the circuit.
     \item<3-> Negative addresses will be "virtual memory cells".
@@ -252,10 +255,10 @@ else set PC to PC+3
 	\input{schema3}
 \end{frame}
 
-\subsection{7-segments display}
+\subsection{7-segment display}
 
 \begin{frame}
-  \frametitle{7-segments display}
+  \frametitle{7-segment display}
   The conversion from binary values to 7-segments display is built
   in the chip, in two steps :
   \begin{enumerate}
@@ -345,24 +348,24 @@ the second step using a circuit derived from the desired truth table.
 start:
 p10 cyclesleft main
 0 0 start
-
 main:
+m1024 cyclesleft main
+
+p35 cyclesleft ;
+... # a sequence of 6 instructions
 ...
-p40 cyclesleft ;
-# reset minutes
--2 -2 ;
-... # a sequence of 6 more instructions
+
+0 0 start
     \end{verbatim}
 \end{frame}
 
-\begin{frame}
-  \frametitle{Summary}
+\begin{frame}{Summary}
   \begin{itemize}
-    \item One instruction. Learn a language in 5 minutes.
-    \item<2-> Few logic gates. %because of the architecture choice
-    \item<3-> Given a perfect clock, our watch should drift away from UTC
-      by less than a second a year. (leap seconds)
-    \item<4-> Valid display until December 31st, 4095
+    \item<2-> One instruction.
+    \item<3-> Few logic gates. %because of the architecture choice
+    \item<4-> Given a perfect clock, our watch should drift away from UTC
+      by less than a second a year. %(leap seconds)
+    \item<5-> Valid display until December 31st, 4095
   \end{itemize}
 \end{frame}
 
